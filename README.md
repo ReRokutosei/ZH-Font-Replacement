@@ -132,6 +132,23 @@
    - 合并字体到 TTC 容器
    - 生成 UI 和非 UI 变体
 
+## 设置额外字重生效
+要设置极细和半粗字重生效，请新建一个reg文件，然后复制下面的代码，保存文件，执行文件。该方法来自一个帖子《等距更纱完美替换微软雅黑，且生效全部5个字重及斜体（提供非等距版）》，然后我已经搜索不到原帖，能搜出来的是蹭热点的“某度知道回答”。
+
+```reg
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
+"Microsoft YaHei Xlight & Microsoft YaHei UI Xlight"="msyhxl.ttc"
+"Microsoft YaHei Semibold & Microsoft YaHei UI Semibold"="msyhsb.ttc"
+```
+
+原作者还有备注：
+```sh
+安装时请用安全模式的命令提示符
+极细半粗粘贴后需先注册后重启一次
+```
+
 ## 许可证
 
 本项目基于 MIT 许可证开源。详见 [LICENSE](LICENSE) 文件。
