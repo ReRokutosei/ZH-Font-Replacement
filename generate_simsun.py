@@ -3,6 +3,7 @@ import shutil as fs
 import config_utils
 import sys
 import os
+import datetime
 
 config = config_utils.load_config()
 
@@ -20,7 +21,10 @@ def set_cleartype(font):
 
 
 def get_version(font):
-    return font.version.split(';')[0]
+    # 获取原始版本号并拼接日期
+    base = font.version.split(';')[0]
+    today = datetime.datetime.now().strftime('%B %d, %Y')
+    return f"{base};{today}"
 
 
 def set_font_names(font, *, fontname, familyname, fullname, subfamily, copyright, version, zh_family=None, zh_fullname=None, postscript=None):

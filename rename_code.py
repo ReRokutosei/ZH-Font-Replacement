@@ -1,5 +1,6 @@
 from fontTools.ttLib import TTFont
 import config_utils
+import datetime
 
 
 config = config_utils.load_config()
@@ -21,20 +22,28 @@ RENAME_FONTS = [
 def set_names(src, weight, out):
     family_name = 'HansCode'
     font_name = f'HansCode{weight}'
+    today = datetime.datetime.now().strftime('%B %d, %Y')
+    version_str = f"Version {VERSION};{today}"
 
     font = TTFont(f'{TMP_DIR}/{src}')
     name_table = font['name']
 
-    # 清除原有 name 记录
-    del name_table.names[:]
-    # 添加新 name 记录
-    name_table.setName(COPYRIGHT, 0, 3, 1, 0x0409)
-    name_table.setName(family_name, 1, 3, 1, 0x0409)
-    name_table.setName(weight, 2, 3, 1, 0x0409)
-    name_table.setName(font_name, 3, 3, 1, 0x0409)
-    name_table.setName(font_name, 4, 3, 1, 0x0409)
-    name_table.setName(VERSION, 5, 3, 1, 0x0409)
-    name_table.setName(font_name, 6, 3, 1, 0x0409)
+    # 修改所有 nameID=5 的记录
+    found = False
+    for record in name_table.names:
+        if record.nameID == 5:
+            record.string = version_str.encode('utf-16-be')
+            found = True
+    # 若没有则添加
+    if not found:
+        from fontTools.ttLib.tables._n_a_m_e import NameRecord
+        rec = NameRecord()
+        rec.nameID = 5
+        rec.platformID = 3
+        rec.platEncID = 1
+        rec.langID = 0x0409
+        rec.string = version_str.encode('utf-16-be')
+        name_table.names.append(rec)
 
     font.save(f'{DST_DIR}/{out}')
 

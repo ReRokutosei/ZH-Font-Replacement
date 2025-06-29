@@ -1,12 +1,14 @@
 from fontTools.ttLib import TTFont, TTCollection
 import shutil
 import config_utils
+import datetime
 
 config = config_utils.load_config()
 
 TMP_DIR = config.get('TEMP_DIR', './temp')
 DST_DIR = config.get('RESULT_DIR', './result')
 VERSION = '2501'
+VERSION_BASE = VERSION
 COPYRIGHT = config.get('COPYRIGHT', 'Made from sarasa by chenh')
 
 FEATURE_FONTS = [
@@ -93,7 +95,7 @@ def set_names(src, weight, ui):
     name_table.setName(weight, 2, 3, 1, 0x0409)
     name_table.setName(font_name, 3, 3, 1, 0x0409)
     name_table.setName(full_name, 4, 3, 1, 0x0409)
-    name_table.setName(VERSION, 5, 3, 1, 0x0409)
+    name_table.setName(get_version(), 5, 3, 1, 0x0409)
     name_table.setName(font_name, 6, 3, 1, 0x0409)
 
     name_table.setName(family_name_sc, 1, 3, 1, 0x0804)
@@ -115,7 +117,7 @@ def set_simsun_names(src, name, name_sc):
     name_table.setName(weight, 2, 3, 1, 0x0409)
     name_table.setName(name, 3, 3, 1, 0x0409)
     name_table.setName(name, 4, 3, 1, 0x0409)
-    name_table.setName(VERSION, 5, 3, 1, 0x0409)
+    name_table.setName(get_version(), 5, 3, 1, 0x0409)
     name_table.setName(name, 6, 3, 1, 0x0409)
 
     name_table.setName(name_sc, 1, 3, 1, 0x0804)
@@ -134,6 +136,11 @@ def merge(src1, src2, dst):
     ttc.fonts.append(ttf2)
 
     ttc.save(f'{DST_DIR}/{dst}')
+
+
+def get_version():
+    today = datetime.datetime.now().strftime('%B %d, %Y')
+    return f"Version {VERSION_BASE};{today}"
 
 
 if __name__ == '__main__':
