@@ -33,14 +33,16 @@
 1. Windows 用户 FontForge 配置说明
    - 下载并安装 [FontForge Windows 版](https://fontforge.org/en-US/downloads/windows-dl/)
    - 安装后记下安装目录（如 FontForgeBuilds）。
-   - 配置 `auto_all.py`
-     - 打开 `auto_all.py`，将 `FFPYTHON_PATH` 设置为你的 FontForge 安装路径下的 `bin\\ffpython.exe`，例如：
-     - `FFPYTHON_PATH = r"D:\Develop\FontForgeBuilds\bin\ffpython.exe"`
+   - 配置 FontForge 路径：
+     - 打开 `config.yaml`，设置 `FFPYTHON_PATH` 为你的 FontForge 安装路径下的 `bin\\ffpython.exe`，例如：
+     ```yaml
+     FFPYTHON_PATH: D:/Develop/FontForgeBuilds/bin/ffpython.exe
+     ```
    - 依赖安装
      - 只需在你自己的 Python 环境下用 pip 安装依赖（无需在 FontForge 的 Python 环境下装 pip）。
-     - `pip install fonttools requests py7zr wget`
+     - `pip install fonttools requests py7zr wget pyyaml`
    - 运行主流程
-     - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。   
+     - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。
 
 2. 配置参数（可选）：
    修改 `config.yaml` 文件中的配置项（YAML 格式）：
@@ -81,6 +83,9 @@
    **配置说明：**
    - 所有构建参数均集中在 `config.yaml`，无需手动编辑 py 文件。
    - `DOWNLOAD_MODE` 可选 `local` 或 `auto`，`local` 仅使用本地源文件，`auto` 优先网络下载。
+   - `auto` 模式下，源字体包会自动下载到 `source_files`，如本地已存在最新版本则跳过下载，旧版本会自动删除。
+   - `source_files` 目录不会被自动清理，缓存所有已下载字体包。
+   - 构建结果每次会自动生成在 `result/verXX-日期时间` 子目录下，便于多版本管理。
    - 至少启用一项功能开关（如 ENABLE_MS_YAHEI）。
    - 字体源文件名需与 `source_files` 目录下压缩包一致。
    - 其他自定义项可参考注释。
@@ -91,7 +96,7 @@
    ```
 
 4. 获取生成的字体：
-   构建完成后，在 `result` 目录下可以找到以下文件：
+   构建完成后，在 `result/verXX-日期时间` 子目录下可以找到以下文件：
    
    微软雅黑系列（当 ENABLE_MS_YAHEI = True）：
    - msyh.ttc - 微软雅黑常规体

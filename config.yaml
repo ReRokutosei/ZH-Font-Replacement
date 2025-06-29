@@ -3,7 +3,7 @@
 
 # 源文件下载配置
 HINTED: true
-DOWNLOAD_MODE: local  # local 或 auto
+DOWNLOAD_MODE: auto  # local 或 auto
 DOWNLOAD_TIMEOUT: 60
 SOURCE_FILES_DIR: ./source_files
 
@@ -28,7 +28,9 @@ RESULT_DIR: ./result
 
 # 你想复制的其他文件到结果目录
 OTHER_COPY:
-  - SarasaMonoSC-Regular.ttf
-  - SarasaMonoSC-Bold.ttf
-  - SarasaMonoSC-Italic.ttf
-  - SarasaMonoSC-BoldItalic.ttf
+  # - SarasaMonoSC-Regular.ttf
+  # - SarasaMonoSC-Bold.ttf
+  # - SarasaMonoSC-Italic.ttf
+  # - SarasaMonoSC-BoldItalic.ttf
+
+FFPYTHON_PATH: D:/Develop/FontForgeBuilds/bin/ffpython.exe

@@ -145,25 +145,34 @@ def clear_dir(directory):
     os.makedirs(directory)
 
 
-def download(url):
-    """下载文件，支持本地文件和网络下载"""
+def download(url, save_dir=None):
+    """下载文件，支持本地文件和网络下载，支持自定义保存目录。若本地已存在同名最新文件则跳过下载，若为旧版本则删除后下载新版本。"""
+    if save_dir is None:
+        save_dir = conf.TEMP_DIR
+    filename = url.split('/')[-1]
+    target_path = os.path.join(save_dir, filename)
+    # 在线下载时，若本地已存在同名文件则跳过
+    if url.startswith('http'):
+        if os.path.exists(target_path):
+            # 检查是否为最新版本（文件名包含版本号，若一致即为最新）
+            return target_path
+        # 删除旧版本（同前缀不同版本）
+        prefix = filename.split('-')[0]
+        for f in os.listdir(save_dir):
+            if f.startswith(prefix) and f != filename:
+                os.remove(os.path.join(save_dir, f))
     if url.startswith('file://'):
         local_path = url[7:]
         if os.path.exists(local_path):
-            target_path = os.path.join(conf.TEMP_DIR, os.path.basename(local_path))
             fs.copy(local_path, target_path)
             return target_path
         raise Exception(f"本地文件不存在: {local_path}")
-
     try:
-        filename = url.split('/')[-1]
-        path = os.path.join(conf.TEMP_DIR, filename)
-        
+        import requests as req
         logging.info(f"开始下载文件: {filename}")
         response = req.get(url, timeout=conf.DOWNLOAD_TIMEOUT, stream=True)
         total_size = int(response.headers.get('content-length', 0))
-        
-        with open(path, 'wb') as f:
+        with open(target_path, 'wb') as f:
             if total_size == 0:
                 f.write(response.content)
             else:
@@ -174,9 +183,8 @@ def download(url):
                     done = int(50 * downloaded / total_size)
                     print(f"\r下载进度: [{'=' * done}{' ' * (50-done)}] {downloaded}/{total_size} bytes", end='')
         print()
-        
         logging.info(f"文件下载完成: {filename}")
-        return path
+        return target_path
     except Exception as e:
         logging.error(f"下载失败: {str(e)}")
         raise

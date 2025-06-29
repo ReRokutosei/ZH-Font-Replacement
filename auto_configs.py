@@ -26,4 +26,6 @@ COPYRIGHT = _cfg.get('COPYRIGHT', 'Made from sarasa by chenh')
 TEMP_DIR = _cfg.get('TEMP_DIR', './temp')
 RESULT_DIR = _cfg.get('RESULT_DIR', './result')
 
-OTHER_COPY = tuple(_cfg.get('OTHER_COPY', []))
+FFPYTHON_PATH = _cfg.get('FFPYTHON_PATH', r'D:/Develop/FontForgeBuilds/bin/ffpython.exe')
+
+OTHER_COPY = tuple(_cfg.get('OTHER_COPY') or [])

@@ -5,8 +5,10 @@ import logging
 import sys
 import os
 import subprocess
+import datetime
 
-FFPYTHON_PATH = r"D:\Develop\FontForgeBuilds\bin\ffpython.exe"
+# FFPYTHON_PATH 由 config.yaml 配置
+FFPYTHON_PATH = conf.FFPYTHON_PATH
 
 # 配置日志
 logging.basicConfig(
@@ -26,8 +28,19 @@ def create_directories():
     for d in [conf.TEMP_DIR, conf.RESULT_DIR, conf.SOURCE_FILES_DIR]:
         if not os.path.exists(d):
             os.makedirs(d)
-        else:
-            fetch.clear_dir(d)
+
+def get_new_result_dir():
+    # 生成 result/ver{num}-{datetime} 子目录
+    now = datetime.datetime.now().strftime('%Y%m%d%H%M')
+    base = conf.RESULT_DIR
+    # 查找已有 verXX- 前缀
+    exist = [x for x in os.listdir(base) if x.startswith('ver') and os.path.isdir(os.path.join(base, x))]
+    nums = [int(x[3:5]) for x in exist if x[3:5].isdigit()]
+    num = max(nums) + 1 if nums else 1
+    subdir = f'ver{num:02d}-{now}'
+    full = os.path.join(base, subdir)
+    os.makedirs(full, exist_ok=True)
+    return full
 
 def run_with_ffpython(script, func):
     result = subprocess.run([FFPYTHON_PATH, script, func])
@@ -55,8 +68,11 @@ if __name__ == '__main__':
                 sys.exit(1)
             for url in urls:
                 logging.info(f"下载包: {url}")
-                path = fetch.download(url)
+                # 下载到 source_files 目录
+                path = fetch.download(url, save_dir=conf.SOURCE_FILES_DIR)
                 fetch.unzip(path)
+        # 生成唯一结果子目录
+        result_subdir = get_new_result_dir()
         # 生成微软雅黑字体
         if conf.ENABLE_MS_YAHEI:
             logging.info("开始生成微软雅黑字体")
@@ -76,9 +92,9 @@ if __name__ == '__main__':
             logging.info("开始生成宋体扩展")
             run_with_ffpython("generate_simsun.py", "gen_simsun_ext")
             logging.info("宋体扩展生成完成")
-        # 复制结果
-        copy.copy_result()
-        logging.info("所有字体生成完成")
+        # 复制结果到唯一子目录
+        copy.copy_result(result_subdir)
+        logging.info(f"所有字体生成完成，结果目录：{result_subdir}")
     except Exception as e:
         logging.error(f"程序执行出错: {str(e)}")
         sys.exit(1)
