@@ -19,7 +19,7 @@ RENAME_FONTS = [
 ]
 
 
-def set_names(src, weight, out):
+def set_names(src, weight, out, dst_dir=None):
     family_name = 'HansCode'
     font_name = f'HansCode{weight}'
     today = datetime.datetime.now().strftime('%B %d, %Y')
@@ -45,9 +45,17 @@ def set_names(src, weight, out):
         rec.string = version_str.encode('utf-16-be')
         name_table.names.append(rec)
 
-    font.save(f'{DST_DIR}/{out}')
+    # 输出到指定目录
+    if dst_dir is None:
+        dst_dir = DST_DIR
+    font.save(f'{dst_dir}/{out}')
 
 
 if __name__ == '__main__':
+    import sys
+    # 支持命令行参数传递目标目录
+    dst_dir = DST_DIR
+    if len(sys.argv) > 1:
+        dst_dir = sys.argv[1]
     for src, weight, out in RENAME_FONTS:
-        set_names(src, weight, out)
+        set_names(src, weight, out, dst_dir)

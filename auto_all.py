@@ -101,8 +101,8 @@ if __name__ == '__main__':
         # 生成 HansCode 编程字体
         if config.get('ENABLE_HANSCODE', True):
             logging.info("开始生成 HansCode 编程字体")
-            # 直接用 python 运行 rename_code.py
-            result = subprocess.run([sys.executable, "rename_code.py"])
+            # 传递 result_subdir 作为目标目录
+            result = subprocess.run([sys.executable, "rename_code.py", result_subdir])
             if result.returncode != 0:
                 raise RuntimeError("rename_code.py 执行失败")
             logging.info("HansCode 编程字体生成完成")
