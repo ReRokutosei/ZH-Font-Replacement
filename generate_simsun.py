@@ -1,6 +1,7 @@
 import fontforge as ff
 import shutil as fs
 import auto_configs as conf
+import sys
 
 
 def open_font(path):
@@ -99,3 +100,12 @@ def gen_simsun_ext():
     set_cleartype(font)
     set_simsun_ext_names(font)
     font.generate(conf.TEMP_DIR + '/simsunb.ttf')
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        func = sys.argv[1]
+        if func == "gen_simsun_ttc":
+            gen_simsun_ttc()
+        elif func == "gen_simsun_ext":
+            gen_simsun_ext()

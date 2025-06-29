@@ -30,12 +30,17 @@
 
 ## 使用方法
 
-1. 需要安装以下 Python 依赖：
-   
-   ```sh
-   pip install fonttools fontforge requests py7zr wget
-   ```
-   
+1. Windows 用户 FontForge 配置说明
+   - 下载并安装 [FontForge Windows 版](https://fontforge.org/en-US/downloads/windows-dl/)
+   - 安装后记下安装目录（如 FontForgeBuilds）。
+   - 配置 `auto_all.py`
+     - 打开 `auto_all.py`，将 `FFPYTHON_PATH` 设置为你的 FontForge 安装路径下的 `bin\\ffpython.exe`，例如：
+     - `FFPYTHON_PATH = r"D:\Develop\FontForgeBuilds\bin\ffpython.exe"`
+   - 依赖安装
+     - 只需在你自己的 Python 环境下用 pip 安装依赖（无需在 FontForge 的 Python 环境下装 pip）。
+     - `pip install fonttools requests py7zr wget`
+   - 运行主流程
+     - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。   
 
 2. 配置参数（可选）：
    修改 `auto_configs.py` 文件中的配置项：

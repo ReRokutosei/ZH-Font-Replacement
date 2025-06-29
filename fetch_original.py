@@ -54,6 +54,31 @@ def find_local_package():
     return None
 
 
+def find_all_local_packages():
+    """查找本地所有目标源文件包（UiSC/MonoSC）"""
+    if not os.path.exists(conf.SOURCE_FILES_DIR):
+        return []
+    files = os.listdir(conf.SOURCE_FILES_DIR)
+    version = None
+    try:
+        import requests as req
+        response = req.get(API_URL, timeout=conf.DOWNLOAD_TIMEOUT)
+        details = json.loads(response.content)
+        version = details['tag_name'][1:]
+    except Exception:
+        pass
+    candidates = []
+    if version:
+        candidates = [
+            f'SarasaUiSC-TTF-{version}.7z',
+            f'SarasaUiSC-TTF-Unhinted-{version}.7z',
+            f'SarasaMonoSC-TTF-{version}.7z',
+            f'SarasaMonoSC-TTF-Unhinted-{version}.7z',
+        ]
+        return [os.path.join(conf.SOURCE_FILES_DIR, name) for name in candidates if name in files]
+    else:
+        return [os.path.join(conf.SOURCE_FILES_DIR, file) for file in files if file.startswith('SarasaUiSC-TTF-') or file.startswith('SarasaMonoSC-TTF-')]
+
 def get_latest():
     """获取最新版本下载链接，只关注目标包"""
     if conf.DOWNLOAD_MODE == 'local':
@@ -87,6 +112,31 @@ def get_latest():
             if local_file:
                 return 'file://' + local_file
         raise Exception("无法获取字体包：网络下载失败，且未找到本地源文件")
+
+
+def get_all_latest():
+    """获取所有最新版本下载链接，只关注目标包"""
+    try:
+        import requests as req
+        from requests.exceptions import RequestException
+        response = req.get(API_URL, timeout=conf.DOWNLOAD_TIMEOUT)
+        details = json.loads(response.content)
+        version = details['tag_name'][1:]
+        candidates = [
+            f'SarasaUiSC-TTF-{version}.7z',
+            f'SarasaUiSC-TTF-Unhinted-{version}.7z',
+            f'SarasaMonoSC-TTF-{version}.7z',
+            f'SarasaMonoSC-TTF-Unhinted-{version}.7z',
+        ]
+        assets = details['assets']
+        urls = []
+        for candidate in candidates:
+            for asset in assets:
+                if asset['name'] == candidate:
+                    urls.append(asset['browser_download_url'])
+        return urls
+    except Exception:
+        return []
 
 
 def clear_dir(directory):
