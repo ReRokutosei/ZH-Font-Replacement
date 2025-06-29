@@ -10,7 +10,7 @@ import datetime
 config = config_utils.load_config()
 
 # FFPYTHON_PATH 由 config.yaml 配置
-FFPYTHON_PATH = config.get('FFPYTHON_PATH', r'D:/Develop/FontForgeBuilds/bin/ffpython.exe')
+FFPYTHON_PATH = config['FFPYTHON_PATH']
 
 # 配置日志
 logging.basicConfig(

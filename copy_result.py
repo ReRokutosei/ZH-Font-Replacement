@@ -16,7 +16,7 @@ def copy_result(result_dir):
         if os.path.exists(src):
             shutil.copy(src, result_dir)
     # 其他自定义文件
-    for file in config.get('OTHER_COPY', []):
+    for file in (config.get('OTHER_COPY') or []):
         src = os.path.join(config.get('TEMP_DIR', './temp'), file)
         if os.path.exists(src):
             shutil.copy(src, result_dir)
