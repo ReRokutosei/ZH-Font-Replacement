@@ -20,3 +20,8 @@ def copy_result(result_dir):
         src = os.path.join(config.get('TEMP_DIR', './temp'), file)
         if os.path.exists(src):
             shutil.copy(src, result_dir)
+    # 复制 HansCode 编程字体
+    for file in os.listdir(config.get('TEMP_DIR', './temp')):
+        if file.startswith('HansCode-') and file.endswith('.ttf'):
+            src = os.path.join(config.get('TEMP_DIR', './temp'), file)
+            shutil.copy(src, result_dir)

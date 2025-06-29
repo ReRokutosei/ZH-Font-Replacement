@@ -98,6 +98,14 @@ if __name__ == '__main__':
             logging.info("开始生成宋体扩展")
             run_with_ffpython("generate_simsun.py", "gen_simsun_ext")
             logging.info("宋体扩展生成完成")
+        # 生成 HansCode 编程字体
+        if config.get('ENABLE_HANSCODE', True):
+            logging.info("开始生成 HansCode 编程字体")
+            # 直接用 python 运行 rename_code.py
+            result = subprocess.run([sys.executable, "rename_code.py"])
+            if result.returncode != 0:
+                raise RuntimeError("rename_code.py 执行失败")
+            logging.info("HansCode 编程字体生成完成")
         # 复制结果到唯一子目录
         copy.copy_result(result_subdir)
         logging.info(f"所有字体生成完成，结果目录：{result_subdir}")
