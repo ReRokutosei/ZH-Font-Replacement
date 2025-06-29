@@ -32,7 +32,6 @@
 
 1. Windows 用户 FontForge 配置说明
    - 下载并安装 [FontForge Windows 版](https://fontforge.org/en-US/downloads/windows-dl/)
-   - 安装后记下安装目录（如 FontForgeBuilds）。
    - 配置 FontForge 路径：
      - 打开 `config.yaml`，设置 `FFPYTHON_PATH` 为你的 FontForge 安装路径下的 `bin\\ffpython.exe`，例如：
      ```yaml
@@ -43,11 +42,6 @@
      ```bash
      python install_packages.py
      ```
-     - 或手动在你自己的 Python 环境下用 pip 安装依赖：
-     ```bash
-     pip install fonttools requests py7zr wget pyyaml
-     ```
-     - 若需在 FontForge 的 ffpython 环境下手动安装 pyyaml，可参考 install_packages.py 的自动复制逻辑。
    - 运行主流程
      - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。
 
@@ -56,7 +50,8 @@
    ```yaml
    # 源文件下载配置
    HINTED: true
-   DOWNLOAD_MODE: local  # local 或 auto
+   DOWNLOAD_MODE: local  # local: 读取本地路径的字体源文件
+                         # auto: 自动从GitHub获取最新字体包。若本地存在同版本文件则跳过，否则去旧留新
    DOWNLOAD_TIMEOUT: 60
    SOURCE_FILES_DIR: ./source_files
 
@@ -103,7 +98,7 @@
    ```
 
 4. 获取生成的字体：
-   构建完成后，在 `result/verXX-日期时间` 子目录下可以找到以下文件：
+   构建完成后，在 `result/verXX-datetime` 子目录下可以找到以下文件：
    
    微软雅黑系列（当 ENABLE_MS_YAHEI = True）：
    - msyh.ttc - 微软雅黑常规体
@@ -136,19 +131,6 @@
    - 处理 GASP 表
    - 合并字体到 TTC 容器
    - 生成 UI 和非 UI 变体
-
-## 开发计划
-
-1. 提高自动化程度：
-   - 简化配置和构建过程
-   - 增加错误处理和日志记录
-   - 添加构建过程的进度显示
-
-2. 增强功能：
-   - 支持输入任意中文字体和拉丁字体
-   - 自动优化 Hinting
-   - 提供更多字重选项
-   - 改进字体特性的处理方式
 
 ## 许可证
 
