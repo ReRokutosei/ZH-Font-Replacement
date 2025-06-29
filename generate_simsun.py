@@ -1,8 +1,10 @@
 import fontforge as ff
 import shutil as fs
-import auto_configs as conf
+import config_utils
 import sys
 import os
+
+config = config_utils.load_config()
 
 
 def open_font(path):
@@ -45,35 +47,35 @@ def set_font_names(font, *, fontname, familyname, fullname, subfamily, copyright
 
 
 def gen_simsun_ttc():
-    src = os.path.join(conf.TEMP_DIR, conf.SIMSUN_SOURCE + '.ttf')
-    new = os.path.join(conf.TEMP_DIR, conf.SIMSUN_SOURCE + '-New.ttf')
+    src = os.path.join(config['TEMP_DIR'], config['SIMSUN_SOURCE'] + '.ttf')
+    new = os.path.join(config['TEMP_DIR'], config['SIMSUN_SOURCE'] + '-New.ttf')
     fs.copy(src, new)
     font = open_font(src)
     remove_gasp(font)
     set_cleartype(font)
     set_font_names(font,
         fontname='SimSun', familyname='SimSun', fullname='SimSun', subfamily='Regular',
-        copyright=conf.COPYRIGHT, version=get_version(font), postscript='SimSun',
+        copyright=config['COPYRIGHT'], version=get_version(font), postscript='SimSun',
         zh_family='宋体', zh_fullname='宋体')
     font_ui = open_font(new)
     remove_gasp(font_ui)
     set_cleartype(font_ui)
     set_font_names(font_ui,
         fontname='NSimSun', familyname='NSimSun', fullname='NSimSun', subfamily='Regular',
-        copyright=conf.COPYRIGHT, version=get_version(font_ui), postscript='NSimSun',
+        copyright=config['COPYRIGHT'], version=get_version(font_ui), postscript='NSimSun',
         zh_family='新宋体', zh_fullname='新宋体')
-    font.generateTtc(os.path.join(conf.TEMP_DIR, 'simsun.ttc'), font_ui, ttcflags=('merge'), layer=1)
+    font.generateTtc(os.path.join(config['TEMP_DIR'], 'simsun.ttc'), font_ui, ttcflags=('merge'), layer=1)
 
 
 def gen_simsun_ext():
-    src = os.path.join(conf.TEMP_DIR, conf.SIMSUN_SOURCE + '.ttf')
+    src = os.path.join(config['TEMP_DIR'], config['SIMSUN_SOURCE'] + '.ttf')
     font = open_font(src)
     remove_gasp(font)
     set_cleartype(font)
     set_font_names(font,
         fontname='SimSun-ExtB', familyname='SimSun-ExtB', fullname='SimSun-ExtB', subfamily='Regular',
-        copyright=conf.COPYRIGHT, version=get_version(font), postscript='SimSun-ExtB')
-    font.generate(os.path.join(conf.TEMP_DIR, 'simsunb.ttf'))
+        copyright=config['COPYRIGHT'], version=get_version(font), postscript='SimSun-ExtB')
+    font.generate(os.path.join(config['TEMP_DIR'], 'simsunb.ttf'))
 
 
 if __name__ == "__main__":

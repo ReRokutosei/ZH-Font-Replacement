@@ -18,7 +18,7 @@
 
 ```
 ├── auto_all.py          # 主程序入口，自动执行完整构建流程
-├── auto_configs.py      # 全局配置文件
+├── config_utils.py      # 配置读取工具
 ├── fetch_original.py    # 下载更纱黑体源文件
 ├── generate_fonts.py    # 生成微软雅黑字体
 ├── generate_simsun.py   # 生成宋体字体
@@ -39,8 +39,15 @@
      FFPYTHON_PATH: D:/Develop/FontForgeBuilds/bin/ffpython.exe
      ```
    - 依赖安装
-     - 只需在你自己的 Python 环境下用 pip 安装依赖（无需在 FontForge 的 Python 环境下装 pip）。
-     - `pip install fonttools requests py7zr wget pyyaml`
+     - 推荐使用自动化脚本一键安装所有依赖并自动复制到 FontForge ffpython 环境：
+     ```bash
+     python install_packages.py
+     ```
+     - 或手动在你自己的 Python 环境下用 pip 安装依赖：
+     ```bash
+     pip install fonttools requests py7zr wget pyyaml
+     ```
+     - 若需在 FontForge 的 ffpython 环境下手动安装 pyyaml，可参考 install_packages.py 的自动复制逻辑。
    - 运行主流程
      - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。
 

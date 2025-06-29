@@ -1,6 +1,8 @@
 import shutil
-import auto_configs as conf
+import config_utils
 import os
+
+config = config_utils.load_config()
 
 
 def copy_result(result_dir):
@@ -10,11 +12,11 @@ def copy_result(result_dir):
         'simsun.ttc', 'simsunb.ttf'
     ]
     for file in main_files:
-        src = os.path.join(conf.TEMP_DIR, file)
+        src = os.path.join(config.get('TEMP_DIR', './temp'), file)
         if os.path.exists(src):
             shutil.copy(src, result_dir)
     # 其他自定义文件
-    for file in conf.OTHER_COPY:
-        src = os.path.join(conf.TEMP_DIR, file)
+    for file in config.get('OTHER_COPY', []):
+        src = os.path.join(config.get('TEMP_DIR', './temp'), file)
         if os.path.exists(src):
             shutil.copy(src, result_dir)

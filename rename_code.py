@@ -1,11 +1,13 @@
 from fontTools.ttLib import TTFont
-import auto_configs as conf
+import config_utils
 
 
-TMP_DIR = conf.TEMP_DIR
-DST_DIR = conf.RESULT_DIR
+config = config_utils.load_config()
+
+TMP_DIR = config.get('TEMP_DIR', './temp')
+DST_DIR = config.get('RESULT_DIR', './result')
 VERSION = '2503'
-COPYRIGHT = conf.COPYRIGHT
+COPYRIGHT = config.get('COPYRIGHT', 'Made from sarasa by chenh')
 
 
 RENAME_FONTS = [

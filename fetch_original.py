@@ -1,9 +1,8 @@
 import shutil as fs
-import auto_configs as conf
+import config_utils
 import os
 import json
 import logging
-
 try:
     import requests as req
     from requests.exceptions import RequestException
@@ -20,17 +19,18 @@ logging.basicConfig(
 )
 
 API_URL = 'https://api.github.com/repos/be5invis/Sarasa-Gothic/releases/latest'
+config = config_utils.load_config()
 
 def find_local_package():
     """查找本地目标源文件包（只关注 SC UI 和 Mono SC）"""
-    if not os.path.exists(conf.SOURCE_FILES_DIR):
+    if not os.path.exists(config.get('SOURCE_FILES_DIR', './source_files')):
         return None
-    files = os.listdir(conf.SOURCE_FILES_DIR)
+    files = os.listdir(config.get('SOURCE_FILES_DIR', './source_files'))
     # 优先顺序：UiSC-hint, UiSC-unhint, MonoSC-hint, MonoSC-unhint
     version = None
     # 尝试从网络获取最新版本号
     try:
-        response = req.get(API_URL, timeout=conf.DOWNLOAD_TIMEOUT)
+        response = req.get(API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
         details = json.loads(response.content)
         version = details['tag_name'][1:]
     except Exception:
@@ -50,19 +50,19 @@ def find_local_package():
                 candidates.append(file)
     for name in candidates:
         if name in files:
-            return os.path.join(conf.SOURCE_FILES_DIR, name)
+            return os.path.join(config.get('SOURCE_FILES_DIR', './source_files'), name)
     return None
 
 
 def find_all_local_packages():
     """查找本地所有目标源文件包（UiSC/MonoSC）"""
-    if not os.path.exists(conf.SOURCE_FILES_DIR):
+    if not os.path.exists(config.get('SOURCE_FILES_DIR', './source_files')):
         return []
-    files = os.listdir(conf.SOURCE_FILES_DIR)
+    files = os.listdir(config.get('SOURCE_FILES_DIR', './source_files'))
     version = None
     try:
         import requests as req
-        response = req.get(API_URL, timeout=conf.DOWNLOAD_TIMEOUT)
+        response = req.get(API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
         details = json.loads(response.content)
         version = details['tag_name'][1:]
     except Exception:
@@ -75,13 +75,13 @@ def find_all_local_packages():
             f'SarasaMonoSC-TTF-{version}.7z',
             f'SarasaMonoSC-TTF-Unhinted-{version}.7z',
         ]
-        return [os.path.join(conf.SOURCE_FILES_DIR, name) for name in candidates if name in files]
+        return [os.path.join(config.get('SOURCE_FILES_DIR', './source_files'), name) for name in candidates if name in files]
     else:
-        return [os.path.join(conf.SOURCE_FILES_DIR, file) for file in files if file.startswith('SarasaUiSC-TTF-') or file.startswith('SarasaMonoSC-TTF-')]
+        return [os.path.join(config.get('SOURCE_FILES_DIR', './source_files'), file) for file in files if file.startswith('SarasaUiSC-TTF-') or file.startswith('SarasaMonoSC-TTF-')]
 
 def get_latest():
     """获取最新版本下载链接，只关注目标包"""
-    if conf.DOWNLOAD_MODE == 'local':
+    if config.get('DOWNLOAD_MODE', 'local') == 'local':
         logging.info("使用本地文件模式")
         local_file = find_local_package()
         if local_file:
@@ -89,7 +89,7 @@ def get_latest():
         raise Exception("未找到本地源文件包，请检查 source_files 目录")
 
     try:
-        response = req.get(API_URL, timeout=conf.DOWNLOAD_TIMEOUT)
+        response = req.get(API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
         details = json.loads(response.content)
         version = details['tag_name'][1:]
         # 只关注这四个目标包
@@ -106,7 +106,7 @@ def get_latest():
                     return asset['browser_download_url']
     except RequestException as e:
         logging.warning(f"网络下载失败: {str(e)}")
-        if conf.DOWNLOAD_MODE == 'auto':
+        if config.get('DOWNLOAD_MODE', 'auto') == 'auto':
             logging.info("尝试使用本地文件")
             local_file = find_local_package()
             if local_file:
@@ -119,7 +119,7 @@ def get_all_latest():
     try:
         import requests as req
         from requests.exceptions import RequestException
-        response = req.get(API_URL, timeout=conf.DOWNLOAD_TIMEOUT)
+        response = req.get(API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
         details = json.loads(response.content)
         version = details['tag_name'][1:]
         candidates = [
@@ -148,7 +148,7 @@ def clear_dir(directory):
 def download(url, save_dir=None):
     """下载文件，支持本地文件和网络下载，支持自定义保存目录。若本地已存在同名最新文件则跳过下载，若为旧版本则删除后下载新版本。"""
     if save_dir is None:
-        save_dir = conf.TEMP_DIR
+        save_dir = config.get('TEMP_DIR', './temp')
     filename = url.split('/')[-1]
     target_path = os.path.join(save_dir, filename)
     # 在线下载时，若本地已存在同名文件则跳过
@@ -170,7 +170,7 @@ def download(url, save_dir=None):
     try:
         import requests as req
         logging.info(f"开始下载文件: {filename}")
-        response = req.get(url, timeout=conf.DOWNLOAD_TIMEOUT, stream=True)
+        response = req.get(url, timeout=config.get('DOWNLOAD_TIMEOUT', 10), stream=True)
         total_size = int(response.headers.get('content-length', 0))
         with open(target_path, 'wb') as f:
             if total_size == 0:
@@ -195,7 +195,7 @@ def unzip(path):
     try:
         logging.info(f"开始解压文件: {path}")
         with sz.SevenZipFile(path, mode='r') as zip_file:
-            zip_file.extractall(path=conf.TEMP_DIR)
+            zip_file.extractall(path=config.get('TEMP_DIR', './temp'))
         logging.info("文件解压完成")
     except Exception as e:
         logging.error(f"解压失败: {str(e)}")
