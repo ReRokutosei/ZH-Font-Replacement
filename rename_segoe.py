@@ -1,10 +1,11 @@
 from fontTools.ttLib import TTFont
 import fontforge
+import auto_configs as conf
 
 
 SRC_DIR = './segoe'
 REF_DIR = './inter'
-DST_DIR = './temp'
+DST_DIR = conf.TEMP_DIR
 
 FONTS = [
     ('segoeui.ttf', 'Inter-Regular.ttf'),

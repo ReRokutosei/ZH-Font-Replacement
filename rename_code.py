@@ -1,17 +1,18 @@
 from fontTools.ttLib import TTFont
+import auto_configs as conf
 
 
-TMP_DIR = './temp'
-DST_DIR = './result'
+TMP_DIR = conf.TEMP_DIR
+DST_DIR = conf.RESULT_DIR
 VERSION = '2503'
-COPYRIGHT = 'Builder: chenh; Date: 2025-03-11; Sources: Source Han Sans & Iosevka'
+COPYRIGHT = conf.COPYRIGHT
 
 
 RENAME_FONTS = [
     ('SarasaMonoSC-Regular.ttf', 'Regular', 'HansCode-Regular.ttf'),
     ('SarasaMonoSC-Bold.ttf', 'Bold', 'HansCode-Bold.ttf'),
-    ('SarasaMonoSC-Oblique.ttf', 'Italic', 'HansCode-Italic.ttf'),
-    ('SarasaMonoSC-BoldOblique.ttf', 'Bold Italic', 'HansCode-BoldItalic.ttf')
+    ('SarasaMonoSC-Italic.ttf', 'Italic', 'HansCode-Italic.ttf'),
+    ('SarasaMonoSC-BoldItalic.ttf', 'Bold Italic', 'HansCode-BoldItalic.ttf')
 ]
 
 
@@ -22,8 +23,9 @@ def set_names(src, weight, out):
     font = TTFont(f'{TMP_DIR}/{src}')
     name_table = font['name']
 
-    name_table.names = []
-
+    # 清除原有 name 记录
+    del name_table.names[:]
+    # 添加新 name 记录
     name_table.setName(COPYRIGHT, 0, 3, 1, 0x0409)
     name_table.setName(family_name, 1, 3, 1, 0x0409)
     name_table.setName(weight, 2, 3, 1, 0x0409)

@@ -1,0 +1,34 @@
+# Yahei-Sarasa 配置文件（YAML格式）
+# 修改本文件即可自定义构建流程，无需手动编辑py文件
+
+# 源文件下载配置
+HINTED: true
+DOWNLOAD_MODE: local  # local 或 auto
+DOWNLOAD_TIMEOUT: 60
+SOURCE_FILES_DIR: ./source_files
+
+# 功能开关（至少启用一项）
+ENABLE_MS_YAHEI: true
+ENABLE_SIMSUN: true
+ENABLE_SIMSUN_EXT: true
+ENABLE_HANSCODE: true
+
+# 字体文件配置
+REGULAR_SOURCE: SarasaUiSC-Regular
+BOLD_SOURCE: SarasaUiSC-Bold
+LIGHT_SOURCE: SarasaUiSC-Light
+EXTRALIGHT_SOURCE: SarasaUiSC-ExtraLight
+SEMIBOLD_SOURCE: SarasaUiSC-SemiBold
+SIMSUN_SOURCE: SarasaUiSC-Regular
+
+# 基础配置
+COPYRIGHT: Made from sarasa by chenh
+TEMP_DIR: ./temp
+RESULT_DIR: ./result
+
+# 你想复制的其他文件到结果目录
+OTHER_COPY:
+  - SarasaMonoSC-Regular.ttf
+  - SarasaMonoSC-Bold.ttf
+  - SarasaMonoSC-Italic.ttf
+  - SarasaMonoSC-BoldItalic.ttf

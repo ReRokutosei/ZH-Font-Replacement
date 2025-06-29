@@ -1,26 +1,29 @@
-# 源文件下载配置
-HINTED = True  # 是否下载 Hinted 版本
-DOWNLOAD_MODE = 'local'  # 下载模式：'auto'-优先网络下载，失败时使用本地文件；'local'-仅使用本地文件
-DOWNLOAD_TIMEOUT = 60  # 下载超时时间（秒）
-SOURCE_FILES_DIR = './source_files'  # 本地源文件目录
+import yaml
+import os
 
-# 功能开关（至少启用其中一项，否则程序将报错）
-ENABLE_MS_YAHEI = True      # 是否生成微软雅黑字体
-ENABLE_SIMSUN = True        # 是否生成宋体
-ENABLE_SIMSUN_EXT = True    # 是否生成宋体扩展
-ENABLE_HANSCODE = True      # 是否生成等宽编程字体
+# 读取配置
+with open(os.path.join(os.path.dirname(__file__), 'config.yaml'), encoding='utf-8') as f:
+    _cfg = yaml.safe_load(f)
 
-# 字体文件配置
-REGULAR_SOURCE = 'SarasaUiSC-Regular'    # 标准字体来源的文件名
-BOLD_SOURCE = 'SarasaUiSC-Bold'          # 粗体来源的文件名
-LIGHT_SOURCE = 'SarasaUiSC-Light'        # 细体来源的文件名
-EXTRALIGHT_SOURCE = 'SarasaUiSC-ExtraLight'  # 极细体来源的文件名
-SEMIBOLD_SOURCE = 'SarasaUiSC-SemiBold'  # 半粗体来源的文件名
-SIMSUN_SOURCE = 'SarasaUiSC-Regular'      # 宋体来源的文件名
+HINTED = _cfg.get('HINTED', True)
+DOWNLOAD_MODE = _cfg.get('DOWNLOAD_MODE', 'local')
+DOWNLOAD_TIMEOUT = _cfg.get('DOWNLOAD_TIMEOUT', 60)
+SOURCE_FILES_DIR = _cfg.get('SOURCE_FILES_DIR', './source_files')
 
-# 基础配置
-COPYRIGHT = 'Made from sarasa by chenh'  # 字体的 Copyright
-TEMP_DIR = './temp'      # 临时目录
-RESULT_DIR = './result'  # 结果目录
+ENABLE_MS_YAHEI = _cfg.get('ENABLE_MS_YAHEI', True)
+ENABLE_SIMSUN = _cfg.get('ENABLE_SIMSUN', True)
+ENABLE_SIMSUN_EXT = _cfg.get('ENABLE_SIMSUN_EXT', True)
+ENABLE_HANSCODE = _cfg.get('ENABLE_HANSCODE', True)
 
-OTHER_COPY = ()  # 你想复制的其他文件到结果目录
+REGULAR_SOURCE = _cfg.get('REGULAR_SOURCE', 'SarasaUiSC-Regular')
+BOLD_SOURCE = _cfg.get('BOLD_SOURCE', 'SarasaUiSC-Bold')
+LIGHT_SOURCE = _cfg.get('LIGHT_SOURCE', 'SarasaUiSC-Light')
+EXTRALIGHT_SOURCE = _cfg.get('EXTRALIGHT_SOURCE', 'SarasaUiSC-ExtraLight')
+SEMIBOLD_SOURCE = _cfg.get('SEMIBOLD_SOURCE', 'SarasaUiSC-SemiBold')
+SIMSUN_SOURCE = _cfg.get('SIMSUN_SOURCE', 'SarasaUiSC-Regular')
+
+COPYRIGHT = _cfg.get('COPYRIGHT', 'Made from sarasa by chenh')
+TEMP_DIR = _cfg.get('TEMP_DIR', './temp')
+RESULT_DIR = _cfg.get('RESULT_DIR', './result')
+
+OTHER_COPY = tuple(_cfg.get('OTHER_COPY', []))

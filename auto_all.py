@@ -23,10 +23,11 @@ def validate_config():
 
 def create_directories():
     """创建必要的目录"""
-    fetch.clear_dir(conf.TEMP_DIR)
-    fetch.clear_dir(conf.RESULT_DIR)
-    if not os.path.exists(conf.SOURCE_FILES_DIR):
-        os.makedirs(conf.SOURCE_FILES_DIR)
+    for d in [conf.TEMP_DIR, conf.RESULT_DIR, conf.SOURCE_FILES_DIR]:
+        if not os.path.exists(d):
+            os.makedirs(d)
+        else:
+            fetch.clear_dir(d)
 
 def run_with_ffpython(script, func):
     result = subprocess.run([FFPYTHON_PATH, script, func])
@@ -36,13 +37,8 @@ def run_with_ffpython(script, func):
 if __name__ == '__main__':
     try:
         logging.info("开始字体生成流程")
-        
-        # 验证配置
         validate_config()
-        
-        # 创建目录
         create_directories()
-        
         # 获取所有源文件包
         if conf.DOWNLOAD_MODE == 'local':
             packages = fetch.find_all_local_packages()
@@ -61,7 +57,6 @@ if __name__ == '__main__':
                 logging.info(f"下载包: {url}")
                 path = fetch.download(url)
                 fetch.unzip(path)
-        
         # 生成微软雅黑字体
         if conf.ENABLE_MS_YAHEI:
             logging.info("开始生成微软雅黑字体")
@@ -71,24 +66,19 @@ if __name__ == '__main__':
             run_with_ffpython("generate_fonts.py", "gen_extralight")
             run_with_ffpython("generate_fonts.py", "gen_semibold")
             logging.info("微软雅黑字体生成完成")
-        
         # 生成宋体
         if conf.ENABLE_SIMSUN:
             logging.info("开始生成宋体")
             run_with_ffpython("generate_simsun.py", "gen_simsun_ttc")
             logging.info("宋体生成完成")
-        
         # 生成宋体扩展
         if conf.ENABLE_SIMSUN_EXT:
             logging.info("开始生成宋体扩展")
             run_with_ffpython("generate_simsun.py", "gen_simsun_ext")
             logging.info("宋体扩展生成完成")
-        
         # 复制结果
         copy.copy_result()
-        
         logging.info("所有字体生成完成")
-        
     except Exception as e:
         logging.error(f"程序执行出错: {str(e)}")
         sys.exit(1)

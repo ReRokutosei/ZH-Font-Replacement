@@ -43,37 +43,47 @@
      - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。   
 
 2. 配置参数（可选）：
-   修改 `auto_configs.py` 文件中的配置项：
-   ```python
-   # 下载设置
-   HINTED = True           # 是否使用 Hinted 版本的更纱黑体
-   DOWNLOAD_MODE = 'auto'  # 'auto'-优先网络下载，失败时使用本地文件；'local'-仅使用本地文件
-   DOWNLOAD_TIMEOUT = 60   # 下载超时时间（秒）
-   
+   修改 `config.yaml` 文件中的配置项（YAML 格式）：
+   ```yaml
+   # 源文件下载配置
+   HINTED: true
+   DOWNLOAD_MODE: local  # local 或 auto
+   DOWNLOAD_TIMEOUT: 60
+   SOURCE_FILES_DIR: ./source_files
+
    # 功能开关（至少启用一项）
-   ENABLE_MS_YAHEI = True    # 是否生成微软雅黑字体
-   ENABLE_SIMSUN = True      # 是否生成宋体
-   ENABLE_SIMSUN_EXT = True  # 是否生成宋体扩展
-   ENABLE_HANSCODE = True    # 是否生成等宽编程字体
-   
+   ENABLE_MS_YAHEI: true
+   ENABLE_SIMSUN: true
+   ENABLE_SIMSUN_EXT: true
+   ENABLE_HANSCODE: true
+
    # 字体文件配置
-   REGULAR_SOURCE = 'SarasaUiSC-Regular'    # 标准字体文件名
-   BOLD_SOURCE = 'SarasaUiSC-Bold'          # 粗体文件名
-   LIGHT_SOURCE = 'SarasaUiSC-Light'        # 细体文件名
-   XLIGHT_SOURCE = 'SarasaUiSC-ExtraLight'  # 极细体文件名
-   SEMIBOLD_SOURCE = 'SarasaUiSC-SemiBold'  # 半粗体文件名
-   SIMSUN_SOURCE = 'SarasaUiSC-Regular'     # 宋体文件名
+   REGULAR_SOURCE: SarasaUiSC-Regular
+   BOLD_SOURCE: SarasaUiSC-Bold
+   LIGHT_SOURCE: SarasaUiSC-Light
+   EXTRALIGHT_SOURCE: SarasaUiSC-ExtraLight
+   SEMIBOLD_SOURCE: SarasaUiSC-SemiBold
+   SIMSUN_SOURCE: SarasaUiSC-Regular
+
+   # 基础配置
+   COPYRIGHT: Made from sarasa by chenh
+   TEMP_DIR: ./temp
+   RESULT_DIR: ./result
+
+   # 你想复制的其他文件到结果目录
+   OTHER_COPY:
+     - SarasaMonoSC-Regular.ttf
+     - SarasaMonoSC-Bold.ttf
+     - SarasaMonoSC-Italic.ttf
+     - SarasaMonoSC-BoldItalic.ttf
    ```
    
-   **字体源文件说明：**
-   1. 如果在`auto_configs.py`选择`local`模式，则需要从[等距更纱仓库](https://github.com/be5invis/Sarasa-Gothic/releases/latest)准备如下四个目标压缩包：
-      - SarasaUiSC-TTF-<version>.7z
-      - SarasaUiSC-TTF-Unhinted-<version>.7z
-      - SarasaMonoSC-TTF-<version>.7z
-      - SarasaMonoSC-TTF-Unhinted-<version>.7z
-   2. 将下载的压缩包放置在根目录 `source_files` 目录下
-   3. 在线下载模式，程序会自动优先选择最新版本和优先级最高的包
-   4. 无需下载体积巨大的 Sarasa-TTF-*.7z 或其它无关包
+   **配置说明：**
+   - 所有构建参数均集中在 `config.yaml`，无需手动编辑 py 文件。
+   - `DOWNLOAD_MODE` 可选 `local` 或 `auto`，`local` 仅使用本地源文件，`auto` 优先网络下载。
+   - 至少启用一项功能开关（如 ENABLE_MS_YAHEI）。
+   - 字体源文件名需与 `source_files` 目录下压缩包一致。
+   - 其他自定义项可参考注释。
 
 3. 运行构建流程：
    ```bash

@@ -1,11 +1,11 @@
 from fontTools.ttLib import TTFont, TTCollection
-# import fontforge
 import shutil
+import auto_configs as conf
 
-TMP_DIR = './temp'
-DST_DIR = './result'
+TMP_DIR = conf.TEMP_DIR
+DST_DIR = conf.RESULT_DIR
 VERSION = '2501'
-COPYRIGHT = 'Builder: chenh; Date: 2025-02-02; Sources: Source Han Sans 2.004 & Segoe UI 5.67'
+COPYRIGHT = conf.COPYRIGHT
 
 FEATURE_FONTS = [
     ('SarasaUiSC-Regular.ttf', 'SarasaUiSC-Regular-NoFeat.ttf'),
