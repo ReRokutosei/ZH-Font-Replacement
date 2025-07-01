@@ -1,27 +1,17 @@
 import shutil
-import config_utils
+import yaml
 import os
 
-config = config_utils.load_config()
+config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
+with open(config_path, encoding='utf-8') as f:
+    config = yaml.safe_load(f)
 
 
 def copy_result(result_dir):
-    # 主要输出文件
     main_files = [
-        'msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc', 'msyhel.ttc', 'msyhsb.ttc',
-        'simsun.ttc', 'simsunb.ttf'
+        'msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc', 'msyhxl.ttc', 'msyhsb.ttc'
     ]
     for file in main_files:
         src = os.path.join(config.get('TEMP_DIR', './temp'), file)
         if os.path.exists(src):
-            shutil.copy(src, result_dir)
-    # 其他自定义文件
-    for file in (config.get('OTHER_COPY') or []):
-        src = os.path.join(config.get('TEMP_DIR', './temp'), file)
-        if os.path.exists(src):
-            shutil.copy(src, result_dir)
-    # 复制 HansCode 编程字体
-    for file in os.listdir(config.get('TEMP_DIR', './temp')):
-        if file.startswith('HansCode-') and file.endswith('.ttf'):
-            src = os.path.join(config.get('TEMP_DIR', './temp'), file)
             shutil.copy(src, result_dir)

@@ -2,3 +2,4 @@ __pycache__/
 temp/
 result/
 source_files/
+test_merge_ttc.py

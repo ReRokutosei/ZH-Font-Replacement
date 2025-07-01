@@ -1,37 +1,36 @@
-import config_utils
-import fetch_original as fetch
+import fetch_sarasa as fetch
+import fetch_inter
+import segoe_generate
 import copy_result as copy
 import logging
 import sys
 import os
 import subprocess
 import datetime
+import shutil
+import json
+import yaml
 
-config = config_utils.load_config()
-
-# FFPYTHON_PATH 由 config.yaml 配置
-FFPYTHON_PATH = config['FFPYTHON_PATH']
-
-# 配置日志
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# config = config_utils.load_config()
+config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
+with open(config_path, encoding='utf-8') as f:
+    config = yaml.safe_load(f)
+
 def validate_config():
     """验证配置的有效性"""
-    if not any([
-        config.get('ENABLE_MS_YAHEI', True),
-        config.get('ENABLE_SIMSUN', True),
-        config.get('ENABLE_SIMSUN_EXT', True),
-        config.get('ENABLE_HANSCODE', True)
-    ]):
-        logging.error("错误：至少需要启用一项生成功能")
+    if not config.get('ENABLE_MS_YAHEI', True) and not config.get('ENABLE_SEGOE_UI', True):
+        logging.error("错误：至少需要启用一项生成功能（微软雅黑/Segoe UI）")
         sys.exit(1)
 
 def create_directories():
     """创建必要的目录"""
     for d in [config.get('TEMP_DIR', './temp'), config.get('RESULT_DIR', './result'), config.get('SOURCE_FILES_DIR', './source_files')]:
+        d = os.path.normpath(d)
         if not os.path.exists(d):
             os.makedirs(d)
 
@@ -48,10 +47,23 @@ def get_new_result_dir():
     os.makedirs(full, exist_ok=True)
     return full
 
-def run_with_ffpython(script, func):
-    result = subprocess.run([FFPYTHON_PATH, script, func])
+def run_with_python(script, *args):
+    result = subprocess.run([sys.executable, script] + list(args))
     if result.returncode != 0:
-        raise RuntimeError(f"{script} {func} 执行失败")
+        raise RuntimeError(f"{script} {' '.join(args)} 执行失败")
+
+def split_ttc_to_ttf(ttc_path, out_dir, ttf_names):
+    """将 ttc 拆分为多个 ttf 文件"""
+    import fontTools.ttLib
+    from fontTools.ttLib import TTCollection
+    if not os.path.exists(ttc_path):
+        raise FileNotFoundError(f"未找到 Inter.ttc: {ttc_path}")
+    ttc = TTCollection(ttc_path)
+    if len(ttc.fonts) < len(ttf_names):
+        raise RuntimeError(f"TTC 包含字体数不足: {len(ttc.fonts)} < {len(ttf_names)}")
+    for i, name in enumerate(ttf_names):
+        out_path = os.path.join(out_dir, name)
+        ttc.fonts[i].save(out_path)
 
 if __name__ == '__main__':
     try:
@@ -59,56 +71,91 @@ if __name__ == '__main__':
         validate_config()
         create_directories()
         # 获取所有源文件包
-        if config.get('DOWNLOAD_MODE', 'local') == 'local':
-            packages = fetch.find_all_local_packages()
-            if not packages:
-                logging.error("未找到任何本地源文件包，请检查 source_files 目录")
-                sys.exit(1)
-            for pkg in packages:
-                logging.info(f"本地包: {pkg}")
-                fetch.unzip(pkg)
-        else:
-            urls = fetch.get_all_latest()
-            if not urls:
-                logging.error("未找到任何可用的在线源文件包")
-                sys.exit(1)
-            for url in urls:
-                logging.info(f"下载包: {url}")
-                # 下载到 source_files 目录
-                path = fetch.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
-                fetch.unzip(path)
+        if config.get('ENABLE_MS_YAHEI', True):
+            if config.get('DOWNLOAD_MODE', 'local') == 'local':
+                packages = fetch.find_all_local_packages()
+                if not packages:
+                    logging.error("未找到任何本地源文件包，请检查 source_files 目录")
+                    sys.exit(1)
+                for pkg in packages:
+                    logging.info(f"本地包: {pkg}")
+                    fetch.unzip(pkg)
+            else:
+                urls = fetch.get_all_latest()
+                if not urls:
+                    logging.error("未找到任何可用的在线源文件包")
+                    sys.exit(1)
+                for url in urls:
+                    filename = os.path.basename(url)
+                    local_path = os.path.normpath(os.path.join(config.get('SOURCE_FILES_DIR', './source_files'), filename))
+                    if os.path.exists(local_path):
+                        logging.info(f"已存在本地最新版本包，跳过下载: {filename}")
+                        logging.info(f"准备解压: {filename}")
+                        fetch.unzip(local_path)
+                    else:
+                        logging.info(f"下载包: {url}")
+                        path = fetch.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
+                        logging.info(f"准备解压: {os.path.basename(path)}")
+                        fetch.unzip(path)
         # 生成唯一结果子目录
-        result_subdir = get_new_result_dir()
+        result_subdir = os.path.normpath(get_new_result_dir())
         # 生成微软雅黑字体
         if config.get('ENABLE_MS_YAHEI', True):
             logging.info("开始生成微软雅黑字体")
-            run_with_ffpython("generate_fonts.py", "gen_regular")
-            run_with_ffpython("generate_fonts.py", "gen_bold")
-            run_with_ffpython("generate_fonts.py", "gen_light")
-            run_with_ffpython("generate_fonts.py", "gen_extralight")
-            run_with_ffpython("generate_fonts.py", "gen_semibold")
-            logging.info("微软雅黑字体生成完成")
-        # 生成宋体
-        if config.get('ENABLE_SIMSUN', True):
-            logging.info("开始生成宋体")
-            run_with_ffpython("generate_simsun.py", "gen_simsun_ttc")
-            logging.info("宋体生成完成")
-        # 生成宋体扩展
-        if config.get('ENABLE_SIMSUN_EXT', True):
-            logging.info("开始生成宋体扩展")
-            run_with_ffpython("generate_simsun.py", "gen_simsun_ext")
-            logging.info("宋体扩展生成完成")
-        # 生成 HansCode 编程字体
-        if config.get('ENABLE_HANSCODE', True):
-            logging.info("开始生成 HansCode 编程字体")
-            # 传递 result_subdir 作为目标目录
-            result = subprocess.run([sys.executable, "rename_code.py", result_subdir])
-            if result.returncode != 0:
-                raise RuntimeError("rename_code.py 执行失败")
-            logging.info("HansCode 编程字体生成完成")
-        # 复制结果到唯一子目录
-        copy.copy_result(result_subdir)
-        logging.info(f"所有字体生成完成，结果目录：{result_subdir}")
+            run_with_python("msyh_generate.py", "gen_regular")
+            run_with_python("msyh_generate.py", "gen_bold")
+            run_with_python("msyh_generate.py", "gen_light")
+            run_with_python("msyh_generate.py", "gen_extralight")
+            run_with_python("msyh_generate.py", "gen_semibold")
+
+            def check_ttc_generated():
+                temp_dir = config.get('TEMP_DIR', './temp')
+                ttc_files = ["msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "msyhxl.ttc", "msyhsb.ttc"]
+                return all(os.path.exists(os.path.join(temp_dir, f)) for f in ttc_files)
+            if check_ttc_generated():
+                copy.copy_result(result_subdir)
+                logging.info("微软雅黑字体生成完成，并已复制到结果目录")
+            else:
+                logging.error("微软雅黑字体未生成任何文件，请检查流程！")
+                sys.exit(1)
+        # 生成Segoe UI字体
+        if config.get('ENABLE_SEGOE_UI', True):
+            logging.info("开始处理Inter->Segoe UI流程")
+            fetch_inter.fetch_inter()  # 下载并解压Inter
+            ttc_path = os.path.join(config.get('TEMP_DIR', './temp'), 'Inter.ttc')
+            ttf_names = [name for name, _ in segoe_generate.SEGOE_MAPPING]
+            split_ttc_to_ttf(ttc_path, config.get('TEMP_DIR', './temp'), ttf_names)
+            # 读取 segoe_font_info.json，构建 info_map
+            with open('./font_info/segoe_font_info.json', 'r', encoding='utf-8') as f:
+                infos = json.load(f)
+            info_map = {info['file'].lower(): info for info in infos}
+            # 直接批量处理
+            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING:
+                inter_path = os.path.join(segoe_generate.DST_DIR, segoe_name)
+                segoe_out = os.path.join(segoe_generate.DST_DIR, segoe_name)
+                info = info_map.get(segoe_name.lower())
+                if info:
+                    segoe_generate.copy_font_info(segoe_out, info)
+            # 复制12个ttf到结果目录
+            for segoe_name, _ in segoe_generate.SEGOE_MAPPING:
+                src = os.path.join(segoe_generate.DST_DIR, segoe_name)
+                if os.path.exists(src):
+                    shutil.copy(src, result_subdir)
+            logging.info("Segoe UI字体处理完成")
+        logging.info(f"所有字体生成完成，结果目录：{os.path.normpath(result_subdir)}")
+        # 自动清理 temp 目录（可选）
+        if config.get('CLEAN_TEMP_ON_SUCCESS', False):
+            temp_dir = os.path.normpath(config.get('TEMP_DIR', './temp'))
+            for filename in os.listdir(temp_dir):
+                file_path = os.path.normpath(os.path.join(temp_dir, filename))
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    logging.warning(f"清理 temp 文件失败: {file_path}，原因: {e}")
+            logging.info("已清理 temp 目录下所有文件。")
     except Exception as e:
         logging.error(f"程序执行出错: {str(e)}")
         sys.exit(1)

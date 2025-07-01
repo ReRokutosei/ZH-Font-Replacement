@@ -1,168 +1,152 @@
-# Yahei-Sarasa
+# ZH-Font-Replacement
 
-这是一个用于生成改进版微软雅黑和宋体字体的工具。本项目利用更纱黑体(Sarasa Gothic)的优秀 Hinting 机制，将思源黑体(Source Han Sans)与 Segoe UI 结合，生成具有更好显示效果的系统字体替代品。
+## 项目简介
 
-## 功能特点
+自动化生成具有更佳显示效果的系统字体替代方案：
 
-- 自动从 GitHub 下载最新版本的更纱黑体
-- 支持生成以下字体：
-  - 微软雅黑（Regular、Bold、Light）及其 UI 变体
-  - 宋体及新宋体（Regular）
-  - 宋体扩展（SimSun-ExtB）
-  - 等宽编程字体变体（HansCode）
-- 保留了 Segoe UI 的高质量 Hinting，提供更清晰锐利的显示效果
-- 完整支持中文和英文字符集
-- 保持与原版系统字体的兼容性
+- 以 更纱黑体 -> 微软雅黑 (中文)
+- 以 Inter -> Segoe UI (英文)
+
+该项目仅限于开发与测试用途，不得用于商业生产环境。
+
+---
 
 ## 目录结构
 
 ```
-├── auto_all.py          # 主程序入口，自动执行完整构建流程
-├── config_utils.py      # 配置读取工具
-├── fetch_original.py    # 下载更纱黑体源文件
-├── generate_fonts.py    # 生成微软雅黑字体
-├── generate_simsun.py   # 生成宋体字体
-├── rename_code.py       # 处理等宽编程字体
-├── rename_segoe.py      # 处理 Segoe UI 字体
-├── rename_ttf.py        # 重命名和处理 TTF 文件
-└── copy_result.py       # 复制最终结果
+├── auto_all.py           # 主流程入口，一键生成所有字体
+├── msyh_generate.py      # 微软雅黑伪装生成核心脚本
+├── segoe_generate.py     # Segoe UI 伪装生成核心脚本
+├── fetch_sarasa.py       # Sarasa Gothic 包下载与解压
+├── fetch_inter.py        # Inter 包下载与解压
+├── copy_result.py        # 结果文件整理与输出
+├── config.yaml           # 主配置文件
+├── font_info/            # 字体 name 字段映射与元数据
+├── result/               # 生成结果输出目录
+├── source_files/         # 字体源文件目录（本地兜底/自动下载）
+├── temp/                 # 临时文件目录
+└── ...
 ```
 
-## 使用方法
+---
 
-1. Windows 用户 FontForge 配置说明
-   - 下载并安装 [FontForge Windows 版](https://fontforge.org/en-US/downloads/windows-dl/)
-   - 配置 FontForge 路径：
-     - 打开 `config.yaml`，设置 `FFPYTHON_PATH` 为你的 FontForge 安装路径下的 `bin\\ffpython.exe`，例如：
-     ```yaml
-     FFPYTHON_PATH: D:/Develop/FontForgeBuilds/bin/ffpython.exe
-     ```
-   - 依赖安装
-     - 推荐使用自动化脚本一键安装所有依赖并自动复制到 FontForge ffpython 环境：
-     ```bash
-     python install_packages.py
-     ```
-   - 运行主流程
-     - 直接用你自己的 Python 运行 `python auto_all.py`，无需用 ffpython 运行主控脚本。
+## 流程总览
 
-2. 配置参数（可选）：
-   修改 `config.yaml` 文件中的配置项（YAML 格式）：
-   ```yaml
-   # 源文件下载配置
-   HINTED: true
-   DOWNLOAD_MODE: local  # local: 读取本地路径的字体源文件
-                         # auto: 自动从GitHub获取最新字体包。若本地存在同版本文件则跳过，否则去旧留新
-   DOWNLOAD_TIMEOUT: 60
-   SOURCE_FILES_DIR: ./source_files
-
-   # 功能开关（至少启用一项）
-   ENABLE_MS_YAHEI: true
-   ENABLE_SIMSUN: true
-   ENABLE_SIMSUN_EXT: true
-   ENABLE_HANSCODE: true
-
-   # 字体文件配置
-   REGULAR_SOURCE: SarasaUiSC-Regular
-   BOLD_SOURCE: SarasaUiSC-Bold
-   LIGHT_SOURCE: SarasaUiSC-Light
-   EXTRALIGHT_SOURCE: SarasaUiSC-ExtraLight
-   SEMIBOLD_SOURCE: SarasaUiSC-SemiBold
-   SIMSUN_SOURCE: SarasaUiSC-Regular
-
-   # 基础配置
-   COPYRIGHT: Made from sarasa by chenh
-   TEMP_DIR: ./temp
-   RESULT_DIR: ./result
-
-   # 你想复制的其他文件到结果目录
-   OTHER_COPY:
-     - SarasaMonoSC-Regular.ttf
-     - SarasaMonoSC-Bold.ttf
-     - SarasaMonoSC-Italic.ttf
-     - SarasaMonoSC-BoldItalic.ttf
-   ```
-   
-   **配置说明：**
-   - 所有构建参数均集中在 `config.yaml`，无需手动编辑 py 文件。
-   - `DOWNLOAD_MODE` 可选 `local` 或 `auto`，`local` 仅使用本地源文件，`auto` 优先网络下载。
-   - `auto` 模式下，源字体包会自动下载到 `source_files`，如本地已存在最新版本则跳过下载，旧版本会自动删除。
-   - `source_files` 目录不会被自动清理，缓存所有已下载字体包。
-   - 构建结果每次会自动生成在 `result/verXX-日期时间` 子目录下，便于多版本管理。
-   - 至少启用一项功能开关（如 ENABLE_MS_YAHEI）。
-   - 字体源文件名需与 `source_files` 目录下压缩包一致。
-   - 其他自定义项可参考注释。
-
-3. 运行构建流程：
-   ```bash
-   python auto_all.py
-   ```
-
-4. 获取生成的字体：
-   构建完成后，在 `result/verXX-datetime` 子目录下可以找到以下文件：
-   
-   微软雅黑系列（当 ENABLE_MS_YAHEI = True）：
-   - msyh.ttc - 微软雅黑常规体
-   - msyhbd.ttc - 微软雅黑粗体
-   - msyhl.ttc - 微软雅黑细体
-   - msyhxl.ttc - 微软雅黑极细体
-   - msyhsb.ttc - 微软雅黑半粗体
-   
-   宋体系列：
-   - simsun.ttc - 宋体/新宋体（当 ENABLE_SIMSUN = True）
-   - simsunb.ttf - 宋体扩展（当 ENABLE_SIMSUN_EXT = True）
-   
-   编程字体：
-   - HansCode-*.ttf - 等宽编程字体（当 ENABLE_HANSCODE = True）
-     包含：Regular/Bold/Italic/BoldItalic
-
-## 工作原理
-
-1. 字体处理流程：
-   - 下载最新版本的更纱黑体
-   - 移除 Segoe UI 中的大部分 OpenType 特性
-   - 将 Segoe UI 伪装成 Inter 字体
-   - 修改更纱黑体源码，保留 Segoe UI 的 Hinting
-   - 构建新的字体文件
-   - 修改字体信息，设置正确的字体名称和版权信息
-
-2. 字体特性处理：
-   - 移除或保留特定的 OpenType 特性
-   - 设置 ClearType 优化
-   - 处理 GASP 表
-   - 合并字体到 TTC 容器
-   - 生成 UI 和非 UI 变体
-
-## 设置额外字重生效
-要设置极细和半粗字重生效，请新建一个reg文件，然后复制下面的代码，保存文件，执行文件。该方法来自一个帖子《等距更纱完美替换微软雅黑，且生效全部5个字重及斜体（提供非等距版）》，然后我已经搜索不到原帖，能搜出来的是蹭热点的“某度知道回答”。
-
-```reg
-Windows Registry Editor Version 5.00
-
-[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
-"Microsoft YaHei Xlight & Microsoft YaHei UI Xlight"="msyhxl.ttc"
-"Microsoft YaHei Semibold & Microsoft YaHei UI Semibold"="msyhsb.ttc"
+```mermaid
+flowchart TD
+    A[准备依赖与配置] --> B{字体源文件获取}
+    B -- 本地存在 --> C[解压 Sarasa/Inter 包]
+    B -- 自动下载 --> C
+    C --> D[生成伪装微软雅黑]
+    C --> E[生成伪装 Segoe UI]
+    D --> F[整理输出到 result/]
+    E --> F
+    F --> G{是否清理 temp?}
+    G -- 是 --> H[清理临时目录]
+    G -- 否 --> I[保留临时文件]
+    H --> J[流程结束]
+    I --> J
 ```
 
-原作者还有备注：
-```sh
-安装时请用安全模式的命令提示符
-极细半粗粘贴后需先注册后重启一次
+---
+
+## 环境要求
+
+- Python >= 3.11.13
+- 推荐 Windows
+
+## 依赖安装
+
+```shell
+pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 ```
 
-## 许可证
+---
 
-本项目基于 MIT 许可证开源。详见 [LICENSE](LICENSE) 文件。
+## 配置说明
 
-## 致谢
+所有流程均由 `config.yaml` 控制，示例：
 
-- [更纱黑体(Sarasa Gothic)](https://github.com/be5invis/Sarasa-Gothic)
-- [思源黑体(Source Han Sans)](https://github.com/adobe-fonts/source-han-sans)
-- [Segoe UI](https://learn.microsoft.com/en-us/typography/font-list/segoe-ui)
-- [Inter](https://github.com/rsms/inter)
+```yaml
+ENABLE_MS_YAHEI: true        # 是否生成微软雅黑（更纱黑体伪装）
+ENABLE_SEGOE_UI: true        # 是否生成 Segoe UI（Inter 伪装）
+TEMP_DIR: ./temp             # 临时文件目录
+RESULT_DIR: ./result         # 结果输出目录
+SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
+DOWNLOAD_MODE: auto          # auto: 自动下载，local: 仅用本地包
+SARASA_VERSION: hinted       # Sarasa 包类型：hinted、unhinted
+CLEAN_TEMP_ON_SUCCESS: true  # 主流程完成后自动清理 temp
+```
+
+- **本地兜底**：如需手动准备字体包，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
+
+  - Sarasa Gothic：
+    - `SarasaGothicSC-TTF-<版本号>.7z` 或 `SarasaGothicSC-TTF-Unhinted-<版本号>.7z`
+    - `SarasaUiSC-TTF-<版本号>.7z` 或 `SarasaUiSC-TTF-Unhinted-<版本号>.7z`
+    - 推荐优先使用无 `Unhinted` 的包，文件可从 [Sarasa Gothic Releases](https://github.com/be5invis/Sarasa-Gothic/releases) 获取
+  - Inter：
+    - `Inter-<版本号>.zip`，如 `Inter-4.1.zip`
+    - 可从 [Inter Releases](https://github.com/rsms/inter/releases) 获取
+
+  > 注意：
+  > - 文件名必须与官方 release 保持一致，否则自动识别会失败。
+  > - 只需下载上述压缩包，无需手动解压，脚本会自动处理。
+  > - 若只需生成某一类字体，可在 `config.yaml` 关闭对应开关。
+
+- **自动下载**：在yaml设置 `DOWNLOAD_MODE: auto` 后，将自动下载最新字体包；若本地已有最新版本则跳过
+
+---
+
+## 一键生成流程
+
+主流程入口：
+
+```shell
+python auto_all.py
+```
+
+- 自动检测配置、准备目录
+- 下载/解压 Sarasa Gothic、Inter 字体包
+- 生成并伪装微软雅黑/Segoe UI 字体
+- 结果输出至 `result/verXX-日期时间/`
+- 可选自动清理临时文件
+
+---
+
+## 主要功能与原理
+
+- **伪装生成**：
+  - 微软雅黑：将 Sarasa SC/UiSC 多字重合成 TTC，批量重命名、替换补全 name 字段
+  - Segoe UI：将 Inter 拆分、重命名、批量替换补全 name 字段
+- **自动化流程**：
+  - 支持本地包与在线下载、解压
+  - 结果目录自动递增
+
+---
 
 ## 注意事项
 
-1. 本项目仅用于学习和研究目的
-2. 生成的字体文件仅供个人使用
-3. 使用前请确保遵守相关字体的许可条款
-4. 不保证生成字体的显示效果与原版系统字体完全一致
+- 需 Python 3.11+，低版本不保证可用
+- 字体包下载失败可手动放置至 `source_files/`
+- 结果仅供本地开发、测试用途，勿用于商业分发
+
+---
+
+## License
+
+[CC BY-NC-SA 4.0](LICENSE)
+
+---
+
+## 免责声明
+
+- 本项目仅供学习、开发、测试用途，严禁用于任何商业用途或违法用途。
+- 所有生成字体均为伪装产物，非官方版本，与 Microsoft、Be5invis、Rasmus Andersson 等原作者无关。
+- 使用本项目造成的任何后果，作者概不负责。
+
+## 致谢
+
+- [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic) 及其作者 Be5invis
+- [Inter](https://github.com/rsms/inter) 及其作者 Rasmus Andersson
+- [fontTools](https://github.com/fonttools/fonttools) 及相关开源社区
+- 以及所有为字体自由与开源生态做出贡献的开发者

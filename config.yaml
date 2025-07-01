@@ -1,36 +1,16 @@
-# Yahei-Sarasa 配置文件（YAML格式）
-# 修改本文件即可自定义构建流程，无需手动编辑py文件
+# 功能开关
+ENABLE_MS_YAHEI: true        # 是否生成微软雅黑（更纱黑体伪装）
+ENABLE_SEGOE_UI: true         # 是否生成 Segoe UI（Inter 伪装）
 
-# 源文件下载配置
-HINTED: true
-DOWNLOAD_MODE: auto  # local 或 auto
-DOWNLOAD_TIMEOUT: 60
-SOURCE_FILES_DIR: ./source_files
+# 目录设置
+TEMP_DIR: ./temp              # 临时文件目录
+RESULT_DIR: ./result          # 结果输出目录
+SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
 
-# 功能开关（至少启用一项）
-ENABLE_MS_YAHEI: true
-ENABLE_SIMSUN: true
-ENABLE_SIMSUN_EXT: true
-ENABLE_HANSCODE: true
+# 下载设置
+DOWNLOAD_MODE: auto           # auto: 自动下载，local: 仅使用本地包
+DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
+SARASA_VERSION: hinted        # Sarasa 包类型：hinted、unhinted
 
-# 字体文件配置
-REGULAR_SOURCE: SarasaUiSC-Regular
-BOLD_SOURCE: SarasaUiSC-Bold
-LIGHT_SOURCE: SarasaUiSC-Light
-EXTRALIGHT_SOURCE: SarasaUiSC-ExtraLight
-SEMIBOLD_SOURCE: SarasaUiSC-SemiBold
-SIMSUN_SOURCE: SarasaUiSC-Regular
-
-# 基础配置
-COPYRIGHT: Made from sarasa by chenh
-TEMP_DIR: ./temp
-RESULT_DIR: ./result
-
-# 你想复制的其他文件到结果目录
-OTHER_COPY:
-  # - SarasaMonoSC-Regular.ttf
-  # - SarasaMonoSC-Bold.ttf
-  # - SarasaMonoSC-Italic.ttf
-  # - SarasaMonoSC-BoldItalic.ttf
-
-FFPYTHON_PATH: D:/Develop/FontForgeBuilds/bin/ffpython.exe
+# 其他选项
+CLEAN_TEMP_ON_SUCCESS: true  # 主流程完成后是否自动清理 temp 目录（true/false）
