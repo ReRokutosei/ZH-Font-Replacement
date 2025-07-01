@@ -1,3 +1,4 @@
+from fontTools.ttLib import TTCollection
 import fetch_sarasa as fetch
 import fetch_inter
 import segoe_generate
@@ -52,18 +53,16 @@ def run_with_python(script, *args):
     if result.returncode != 0:
         raise RuntimeError(f"{script} {' '.join(args)} 执行失败")
 
-def split_ttc_to_ttf(ttc_path, out_dir, ttf_names):
-    """将 ttc 拆分为多个 ttf 文件"""
-    import fontTools.ttLib
-    from fontTools.ttLib import TTCollection
-    if not os.path.exists(ttc_path):
-        raise FileNotFoundError(f"未找到 Inter.ttc: {ttc_path}")
-    ttc = TTCollection(ttc_path)
-    if len(ttc.fonts) < len(ttf_names):
-        raise RuntimeError(f"TTC 包含字体数不足: {len(ttc.fonts)} < {len(ttf_names)}")
-    for i, name in enumerate(ttf_names):
-        out_path = os.path.join(out_dir, name)
-        ttc.fonts[i].save(out_path)
+# def split_ttc_to_ttf(ttc_path, out_dir, ttf_names):
+#     """将 ttc 拆分为多个 ttf 文件"""
+#     if not os.path.exists(ttc_path):
+#         raise FileNotFoundError(f"未找到 Inter.ttc: {ttc_path}")
+#     ttc = TTCollection(ttc_path)
+#     if len(ttc.fonts) < len(ttf_names):
+#         raise RuntimeError(f"TTC 包含字体数不足: {len(ttc.fonts)} < {len(ttf_names)}")
+#     for i, name in enumerate(ttf_names):
+#         out_path = os.path.join(out_dir, name)
+#         ttc.fonts[i].save(out_path)
 
 if __name__ == '__main__':
     try:
@@ -122,19 +121,24 @@ if __name__ == '__main__':
         if config.get('ENABLE_SEGOE_UI', True):
             logging.info("开始处理Inter->Segoe UI流程")
             fetch_inter.fetch_inter()  # 下载并解压Inter
-            ttc_path = os.path.join(config.get('TEMP_DIR', './temp'), 'Inter.ttc')
-            ttf_names = [name for name, _ in segoe_generate.SEGOE_MAPPING]
-            split_ttc_to_ttf(ttc_path, config.get('TEMP_DIR', './temp'), ttf_names)
+            # 直接从 ./temp/extras/ttf/ 复制并重命名
+            extras_ttf_dir = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')
+            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING:
+                src = os.path.join(extras_ttf_dir, inter_name)
+                dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
+                if os.path.exists(src):
+                    shutil.copy(src, dst)
+                else:
+                    logging.warning(f"未找到 Inter ttf: {src}")
             # 读取 segoe_font_info.json，构建 info_map
             with open('./font_info/segoe_font_info.json', 'r', encoding='utf-8') as f:
                 infos = json.load(f)
             info_map = {info['file'].lower(): info for info in infos}
             # 直接批量处理
             for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING:
-                inter_path = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 segoe_out = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 info = info_map.get(segoe_name.lower())
-                if info:
+                if info and os.path.exists(segoe_out):
                     segoe_generate.copy_font_info(segoe_out, info)
             # 复制12个ttf到结果目录
             for segoe_name, _ in segoe_generate.SEGOE_MAPPING:

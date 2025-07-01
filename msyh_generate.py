@@ -123,28 +123,6 @@ def batch_patch_names():
         if os.path.exists(dst_path):
             set_names_with_json(dst_path, dst)
 
-def call_fontforge_make_ttc(ttf_list, ttc_path, fontforge_exe_path):
-    # 路径全部转为绝对路径并用 os.path.normpath 规范化，并加双引号
-    ttf_list = [f'"{os.path.normpath(os.path.abspath(p))}"' for p in ttf_list]
-    ttc_path = f'"{os.path.normpath(os.path.abspath(ttc_path))}"'
-    print('[DEBUG] 合成 ttc 输入:')
-    for p in ttf_list:
-        print('  ', p.strip('"'), os.path.exists(p.strip('"')))
-    print('[DEBUG] ttc 输出:', ttc_path.strip('"'))
-    pe_lines = []
-    for ttf in ttf_list:
-        pe_lines.append(f'Open({ttf})')
-    ttc_args = ', '.join(ttf for ttf in ttf_list)
-    pe_lines.append(f'GenerateTtc({ttc_path}, {ttc_args})')
-    pe_lines.append('Quit()')
-    pe_script = '\n'.join(pe_lines)
-    script_path = os.path.normpath(os.path.join(config.get('TEMP_DIR', './temp'), 'make_ttc.pe'))
-    with open(script_path, 'w', encoding='utf-8') as f:
-        f.write(pe_script)
-    # fontforge_exe_path 也用 normpath 并加引号
-    fontforge_exe_path = os.path.normpath(fontforge_exe_path)
-    # subprocess 传参全部用 normpath 路径
-    subprocess.check_call([fontforge_exe_path, '-script', script_path])
 
 def generate_ttc_with_fonttools(ttf_list, ttc_path):
     """
@@ -178,13 +156,7 @@ def batch_generate_ttc(ttc_names=None):
             print(f"[INFO] 生成 {ttc_name} 成功 (FontTools)")
         except Exception as e:
             print(f"[ERROR] 生成 {ttc_name} 失败 (FontTools): {e}")
-            fontforge_exe_path = config.get('FONTFORGE_EXE_PATH')
-            if fontforge_exe_path:
-                try:
-                    call_fontforge_make_ttc(ttf_paths_exist, ttc_path, fontforge_exe_path)
-                    print(f"[INFO] 生成 {ttc_name} 成功 (fontforge.exe)")
-                except Exception as e2:
-                    print(f"[ERROR] 生成 {ttc_name} 失败 (fontforge.exe): {e2}")
+
 
 def check_ttc_generated():
     temp_dir = config.get('TEMP_DIR', './temp')

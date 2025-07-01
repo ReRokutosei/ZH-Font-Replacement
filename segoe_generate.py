@@ -12,9 +12,9 @@ with open(config_path, encoding='utf-8') as f:
 
 if not isinstance(config, dict):
     raise RuntimeError(f"config.yaml 解析异常，返回类型: {type(config)}, 内容: {config}")
-REF_DIR = config.get('INTER_DIR', './inter')
+REF_DIR = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')  # 直接使用解压后的单独ttf目录
 DST_DIR = config.get('TEMP_DIR', './temp')
-FONT_INFO_DIR = config.get('FONT_INFO_DIR', './font_info')
+FONT_INFO_DIR = './font_info'
 
 SEGOE_MAPPING = [
     ('segoeui.ttf',    'Inter-Regular.ttf'),
@@ -61,6 +61,8 @@ def batch_rename_and_patch():
             info = info_map.get(segoe_name.lower())
             if info:
                 copy_font_info(segoe_out, info)
+        else:
+            print(f"[WARN] 找不到源字体: {inter_path}")
 
 
 if __name__ == '__main__':
