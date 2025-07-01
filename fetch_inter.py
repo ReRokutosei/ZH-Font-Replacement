@@ -51,7 +51,7 @@ def download(url, save_dir=None):
     target_path = os.path.normpath(os.path.join(save_dir, filename))
     if os.path.exists(target_path):
         return target_path
-    resp = req.get(url, timeout=DOWNLOAD_TIMEOUT, stream=True)
+    resp = req.get(url, timeout=config.get('DOWNLOAD_TIMEOUT', 10), stream=True)
     with open(target_path, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=8192):
             if chunk:
