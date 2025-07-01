@@ -124,6 +124,22 @@ python auto_all.py
 
 ---
 
+## 设置额外字重生效（Windows）
+
+如需让极细和半粗字重在 Windows 下生效，请新建 reg 文件，内容如下：
+
+```reg
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
+"Microsoft YaHei Xlight & Microsoft YaHei UI Xlight"="msyhxl.ttc"
+"Microsoft YaHei Semibold & Microsoft YaHei UI Semibold"="msyhsb.ttc"
+```
+
+保存后双击导入，重启生效。
+
+---
+
 ## 注意事项
 
 - 需 Python 3.11+，低版本不保证可用
