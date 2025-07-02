@@ -16,17 +16,26 @@ if not isinstance(config, dict):
 
 API_URL = 'https://api.github.com/repos/be5invis/Sarasa-Gothic/releases/latest'
 
+
+# 全局缓存
+_sarasa_version_cache = None
+
 def get_version_and_assets():
     """在线获取 Sarasa 最新版本和 assets 信息"""
+    global _sarasa_version_cache
+    if _sarasa_version_cache is not None:
+        return _sarasa_version_cache
     try:
         response = req.get(API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
         details = response.json()
         version = details['tag_name'][1:]
         assets = details.get('assets', [])
         logging.info(f"获取 Sarasa 在线版本信息成功: {version}")
+        _sarasa_version_cache = (version, assets)
         return version, assets
     except Exception as e:
         logging.error(f"获取 Sarasa 在线版本信息失败: {e}")
+        _sarasa_version_cache = (None, [])
         return None, []
 
 def get_candidates(version):
