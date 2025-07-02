@@ -1,16 +1,18 @@
-from fontTools.ttLib import TTCollection
-import fetch_sarasa as fetch
-import fetch_inter
-import segoe_generate
-import copy_result as copy
-import logging
-import sys
-import os
-import subprocess
 import datetime
-import shutil
 import json
+import logging
+import os
+import shutil
+import subprocess
+import sys
+
 import yaml
+from fontTools.ttLib import TTCollection
+
+import copy_result as copy
+import fetch_inter as inter
+import fetch_sarasa as sarasa
+import segoe_generate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -72,15 +74,15 @@ if __name__ == '__main__':
         # 获取所有源文件包
         if config.get('ENABLE_MS_YAHEI', True):
             if config.get('DOWNLOAD_MODE', 'local') == 'local':
-                packages = fetch.find_all_local_packages()
+                packages = sarasa.find_all_local_packages()
                 if not packages:
                     logging.error("未找到任何本地源文件包，请检查 source_files 目录")
                     sys.exit(1)
                 for pkg in packages:
                     logging.info(f"本地包: {pkg}")
-                    fetch.unzip(pkg)
+                    sarasa.unzip(pkg)
             else:
-                urls = fetch.get_all_latest()
+                urls = sarasa.get_all_latest()
                 if not urls:
                     logging.error("未找到任何可用的在线源文件包")
                     sys.exit(1)
@@ -90,12 +92,12 @@ if __name__ == '__main__':
                     if os.path.exists(local_path):
                         logging.info(f"已存在本地最新版本包，跳过下载: {filename}")
                         logging.info(f"准备解压: {filename}")
-                        fetch.unzip(local_path)
+                        sarasa.unzip(local_path)
                     else:
                         logging.info(f"下载包: {url}")
-                        path = fetch.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
+                        path = sarasa.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
                         logging.info(f"准备解压: {os.path.basename(path)}")
-                        fetch.unzip(path)
+                        sarasa.unzip(path)
         # 生成唯一结果子目录
         result_subdir = os.path.normpath(get_new_result_dir())
         # 生成微软雅黑字体
@@ -120,10 +122,10 @@ if __name__ == '__main__':
         # 生成Segoe UI字体
         if config.get('ENABLE_SEGOE_UI', True):
             logging.info("开始处理Inter->Segoe UI流程")
-            fetch_inter.fetch_inter()  # 下载并解压Inter
+            inter.fetch_inter()  # 下载并解压Inter
             # 直接从 ./temp/extras/ttf/ 复制并重命名
             extras_ttf_dir = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')
-            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING:
+            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING_LOOSE:
                 src = os.path.join(extras_ttf_dir, inter_name)
                 dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 if os.path.exists(src):
@@ -135,13 +137,13 @@ if __name__ == '__main__':
                 infos = json.load(f)
             info_map = {info['file'].lower(): info for info in infos}
             # 直接批量处理
-            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING:
+            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING_LOOSE:
                 segoe_out = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 info = info_map.get(segoe_name.lower())
                 if info and os.path.exists(segoe_out):
                     segoe_generate.copy_font_info(segoe_out, info)
             # 复制12个ttf到结果目录
-            for segoe_name, _ in segoe_generate.SEGOE_MAPPING:
+            for segoe_name, _ in segoe_generate.SEGOE_MAPPING_LOOSE:
                 src = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 if os.path.exists(src):
                     shutil.copy(src, result_subdir)

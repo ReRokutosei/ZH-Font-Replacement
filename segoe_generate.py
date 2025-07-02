@@ -1,10 +1,10 @@
-from fontTools.ttLib import TTFont
-import yaml
 import json
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
 import os
 import shutil
 
+import yaml
+from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
@@ -16,19 +16,19 @@ REF_DIR = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')  # 直
 DST_DIR = config.get('TEMP_DIR', './temp')
 FONT_INFO_DIR = './font_info'
 
-SEGOE_MAPPING = [
-    ('segoeui.ttf',    'Inter-Regular.ttf'),
-    ('segoeuib.ttf',   'Inter-Bold.ttf'),
-    ('segoeuii.ttf',   'Inter-Italic.ttf'),
-    ('segoeuil.ttf',   'Inter-Thin.ttf'),
-    ('segoeuisl.ttf',  'Inter-Light.ttf'),
-    ('segoeuiz.ttf',   'Inter-BoldItalic.ttf'),
-    ('seguibl.ttf',    'Inter-Black.ttf'),
-    ('seguibli.ttf',   'Inter-BlackItalic.ttf'),
-    ('seguili.ttf',    'Inter-ThinItalic.ttf'),
-    ('seguisb.ttf',    'Inter-SemiBold.ttf'),
-    ('seguisbi.ttf',   'Inter-SemiBoldItalic.ttf'),
-    ('seguisli.ttf',   'Inter-LightItalic.ttf'),
+SEGOE_MAPPING_LOOSE = [
+    ("segoeui.ttf",    "Inter-Regular.ttf"),
+    ("segoeuib.ttf",   "Inter-Bold.ttf"),
+    ("segoeuii.ttf",   "Inter-Italic.ttf"),
+    ("segoeuil.ttf",   "Inter-Thin.ttf"),
+    ("segoeuisl.ttf",  "Inter-Light.ttf"),
+    ("segoeuiz.ttf",   "Inter-BoldItalic.ttf"),
+    ("seguibl.ttf",    "Inter-Black.ttf"),
+    ("seguibli.ttf",   "Inter-BlackItalic.ttf"),
+    ("seguili.ttf",    "Inter-ThinItalic.ttf"),
+    ("seguisb.ttf",    "Inter-SemiBold.ttf"),
+    ("seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"),
+    ("seguisli.ttf",   "Inter-LightItalic.ttf"),
 ]
 
 
@@ -53,7 +53,7 @@ def batch_rename_and_patch():
     with open(font_info_path, 'r', encoding='utf-8') as f:
         infos = json.load(f)
     info_map = {info['file'].lower(): info for info in infos}
-    for segoe_name, inter_name in SEGOE_MAPPING:
+    for segoe_name, inter_name in SEGOE_MAPPING_LOOSE:
         inter_path = os.path.join(REF_DIR, inter_name)
         segoe_out = os.path.join(DST_DIR, segoe_name)
         if os.path.exists(inter_path):

@@ -1,18 +1,18 @@
-import shutil as fs
-import yaml
-import sys
-import os
 import json
-from fontTools.ttLib import TTFont, TTCollection
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
-from fontTools.ttLib import newTable
+import os
+import shutil as fs
 import subprocess
+import sys
+
+import yaml
+from fontTools.ttLib import TTCollection, TTFont, newTable
+from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
     config = yaml.safe_load(f)
 
-MSYH_MAPPING = [
+MSYH_MAPPING_MONOSPACED = [
     ("msyh0.ttf",   "SarasaGothicSC-Regular.ttf"),
     ("msyh1.ttf",   "SarasaUiSC-Regular.ttf"),
     ("msyh2.ttf",   "SarasaUiSC-Italic.ttf"),
@@ -109,7 +109,7 @@ def set_names_with_json(ttf_path, file_name):
     font.save(ttf_path)
 
 def batch_copy_msyh_ttf():
-    for dst, src in MSYH_MAPPING:
+    for dst, src in MSYH_MAPPING_MONOSPACED:
         src_path = os.path.join(config['TEMP_DIR'], src)
         dst_path = os.path.join(config['TEMP_DIR'], dst)
         if os.path.exists(src_path):
@@ -118,7 +118,7 @@ def batch_copy_msyh_ttf():
             print(f"[WARN] 源字体不存在: {src_path}")
 
 def batch_patch_names():
-    for dst, _ in MSYH_MAPPING:
+    for dst, _ in MSYH_MAPPING_MONOSPACED:
         dst_path = os.path.join(config['TEMP_DIR'], dst)
         if os.path.exists(dst_path):
             set_names_with_json(dst_path, dst)

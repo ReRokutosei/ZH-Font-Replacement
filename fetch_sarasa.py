@@ -1,10 +1,10 @@
-import os
 import json
 import logging
-import yaml
-import requests as req
-import py7zr as sz
+import os
 
+import py7zr as sz
+import requests as req
+import yaml
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
@@ -25,7 +25,7 @@ def get_version_and_assets():
         return None, []
 
 def get_candidates(version):
-    sarasa_version = config.get('SARASA_VERSION', 'normal')
+    sarasa_version = config.get('SARASA_VERSION_STYLE', 'normal')
     candidates = []
     if sarasa_version == 'hinted':
         candidates = [

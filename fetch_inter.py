@@ -1,10 +1,10 @@
-import os
 import json
 import logging
-import yaml
-import requests as req
+import os
 import zipfile
 
+import requests as req
+import yaml
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:

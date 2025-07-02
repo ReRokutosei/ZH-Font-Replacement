@@ -1,6 +1,7 @@
-import shutil
-import yaml
 import os
+import shutil
+
+import yaml
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
