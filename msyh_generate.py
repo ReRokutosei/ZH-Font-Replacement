@@ -12,6 +12,8 @@ config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
     config = yaml.safe_load(f)
 
+
+# 等宽映射表
 MSYH_MAPPING_MONOSPACED = [
     ("msyh0.ttf",   "SarasaGothicSC-Regular.ttf"),
     ("msyh1.ttf",   "SarasaUiSC-Regular.ttf"),
@@ -32,6 +34,30 @@ MSYH_MAPPING_MONOSPACED = [
     ("msyhxl0.ttf", "SarasaUiSC-ExtraLight.ttf"),
     ("msyhxl1.ttf", "SarasaGothicSC-ExtraLight.ttf"),
     ("msyhxl2.ttf", "SarasaUiSC-ExtraLightItalic.ttf"),
+    ("msyhxl3.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"),
+]
+
+# 不等宽映射表（proportional）
+MSYH_MAPPING_PROPORTIONAL = [
+    ("msyh0.ttf",   "SarasaGothicSC-Regular.ttf"),
+    ("msyh1.ttf",   "SarasaGothicSC-Regular.ttf"),
+    ("msyh2.ttf",   "SarasaGothicSC-Italic.ttf"),
+    ("msyh3.ttf",   "SarasaGothicSC-Italic.ttf"),
+    ("msyhbd0.ttf", "SarasaGothicSC-Bold.ttf"),
+    ("msyhbd1.ttf", "SarasaGothicSC-Bold.ttf"),
+    ("msyhbd2.ttf", "SarasaGothicSC-BoldItalic.ttf"),
+    ("msyhbd3.ttf", "SarasaGothicSC-BoldItalic.ttf"),
+    ("msyhl0.ttf",  "SarasaGothicSC-Light.ttf"),
+    ("msyhl1.ttf",  "SarasaGothicSC-Light.ttf"),
+    ("msyhl2.ttf",  "SarasaGothicSC-LightItalic.ttf"),
+    ("msyhl3.ttf",  "SarasaGothicSC-LightItalic.ttf"),
+    ("msyhsb0.ttf", "SarasaGothicSC-SemiBold.ttf"),
+    ("msyhsb1.ttf", "SarasaGothicSC-SemiBold.ttf"),
+    ("msyhsb2.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"),
+    ("msyhsb3.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"),
+    ("msyhxl0.ttf", "SarasaGothicSC-ExtraLight.ttf"),
+    ("msyhxl1.ttf", "SarasaGothicSC-ExtraLight.ttf"),
+    ("msyhxl2.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"),
     ("msyhxl3.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"),
 ]
 
@@ -108,8 +134,16 @@ def set_names_with_json(ttf_path, file_name):
             print(f"[WARN] setName failed: {e}")
     font.save(ttf_path)
 
+
+def get_msyh_mapping():
+    style = config.get('MS_YAHEI_NUMERALS_STYLE', 'monospaced').lower()
+    if style == 'proportional':
+        return MSYH_MAPPING_PROPORTIONAL
+    return MSYH_MAPPING_MONOSPACED
+
 def batch_copy_msyh_ttf():
-    for dst, src in MSYH_MAPPING_MONOSPACED:
+    mapping = get_msyh_mapping()
+    for dst, src in mapping:
         src_path = os.path.join(config['TEMP_DIR'], src)
         dst_path = os.path.join(config['TEMP_DIR'], dst)
         if os.path.exists(src_path):
@@ -118,7 +152,8 @@ def batch_copy_msyh_ttf():
             print(f"[WARN] 源字体不存在: {src_path}")
 
 def batch_patch_names():
-    for dst, _ in MSYH_MAPPING_MONOSPACED:
+    mapping = get_msyh_mapping()
+    for dst, _ in mapping:
         dst_path = os.path.join(config['TEMP_DIR'], dst)
         if os.path.exists(dst_path):
             set_names_with_json(dst_path, dst)

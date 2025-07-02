@@ -16,6 +16,8 @@ REF_DIR = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')  # 直
 DST_DIR = config.get('TEMP_DIR', './temp')
 FONT_INFO_DIR = './font_info'
 
+
+# 宽松间距映射表
 SEGOE_MAPPING_LOOSE = [
     ("segoeui.ttf",    "Inter-Regular.ttf"),
     ("segoeuib.ttf",   "Inter-Bold.ttf"),
@@ -30,6 +32,28 @@ SEGOE_MAPPING_LOOSE = [
     ("seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"),
     ("seguisli.ttf",   "Inter-LightItalic.ttf"),
 ]
+
+# 紧凑间距映射表
+SEGOE_MAPPING_COMPACT = [
+    ("segoeui.ttf",    "InterDisplay-Regular.ttf"),
+    ("segoeuib.ttf",   "InterDisplay-Bold.ttf"),
+    ("segoeuii.ttf",   "InterDisplay-Italic.ttf"),
+    ("segoeuil.ttf",   "InterDisplay-Thin.ttf"),
+    ("segoeuisl.ttf",  "InterDisplay-Light.ttf"),
+    ("segoeuiz.ttf",   "InterDisplay-BoldItalic.ttf"),
+    ("seguibl.ttf",    "InterDisplay-Black.ttf"),
+    ("seguibli.ttf",   "InterDisplay-BlackItalic.ttf"),
+    ("seguili.ttf",    "InterDisplay-ThinItalic.ttf"),
+    ("seguisb.ttf",    "InterDisplay-SemiBold.ttf"),
+    ("seguisbi.ttf",   "InterDisplay-SemiBoldItalic.ttf"),
+    ("seguisli.ttf",   "InterDisplay-LightItalic.ttf"),
+]
+
+def get_segoe_mapping():
+    style = config.get('SEGOE_UI_SPACING_STYLE', 'loose').lower()
+    if style == 'compact':
+        return SEGOE_MAPPING_COMPACT
+    return SEGOE_MAPPING_LOOSE
 
 
 def copy_font_info(dst, info_json):
@@ -53,7 +77,8 @@ def batch_rename_and_patch():
     with open(font_info_path, 'r', encoding='utf-8') as f:
         infos = json.load(f)
     info_map = {info['file'].lower(): info for info in infos}
-    for segoe_name, inter_name in SEGOE_MAPPING_LOOSE:
+    mapping = get_segoe_mapping()
+    for segoe_name, inter_name in mapping:
         inter_path = os.path.join(REF_DIR, inter_name)
         segoe_out = os.path.join(DST_DIR, segoe_name)
         if os.path.exists(inter_path):

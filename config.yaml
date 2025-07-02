@@ -2,6 +2,11 @@
 ENABLE_MS_YAHEI: true        # 是否生成微软雅黑（更纱黑体伪装）
 ENABLE_SEGOE_UI: true         # 是否生成 Segoe UI（Inter 伪装）
 
+# 生成的微软雅黑数字风格: monospaced(等宽) 或 proportional(不等宽)
+MS_YAHEI_NUMERALS_STYLE: proportional 
+# 生成的Segoe UI 间距风格: loose(宽松) 或 compact(紧凑)
+SEGOE_UI_SPACING_STYLE: compact
+
 # 目录设置
 TEMP_DIR: ./temp              # 临时文件目录
 RESULT_DIR: ./result          # 结果输出目录

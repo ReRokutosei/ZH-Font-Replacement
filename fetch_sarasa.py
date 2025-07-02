@@ -26,17 +26,24 @@ def get_version_and_assets():
 
 def get_candidates(version):
     sarasa_version = config.get('SARASA_VERSION_STYLE', 'normal')
+    numerals_style = config.get('MS_YAHEI_NUMERALS_STYLE', 'monospaced').lower()
     candidates = []
-    if sarasa_version == 'hinted':
-        candidates = [
-            f'SarasaUiSC-TTF-{version}.7z',
-            f'SarasaGothicSC-TTF-{version}.7z',
-        ]
-    elif sarasa_version == 'unhinted':
-        candidates = [
-            f'SarasaUiSC-TTF-Unhinted-{version}.7z',
-            f'SarasaGothicSC-TTF-Unhinted-{version}.7z',
-        ]
+    if numerals_style == 'proportional':
+        if sarasa_version == 'hinted':
+            candidates = [f'SarasaGothicSC-TTF-{version}.7z']
+        elif sarasa_version == 'unhinted':
+            candidates = [f'SarasaGothicSC-TTF-Unhinted-{version}.7z']
+    else:
+        if sarasa_version == 'hinted':
+            candidates = [
+                f'SarasaUiSC-TTF-{version}.7z',
+                f'SarasaGothicSC-TTF-{version}.7z',
+            ]
+        elif sarasa_version == 'unhinted':
+            candidates = [
+                f'SarasaUiSC-TTF-Unhinted-{version}.7z',
+                f'SarasaGothicSC-TTF-Unhinted-{version}.7z',
+            ]
     return candidates
 
 def find_all_local_packages():

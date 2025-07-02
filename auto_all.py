@@ -125,7 +125,8 @@ if __name__ == '__main__':
             inter.fetch_inter()  # 下载并解压Inter
             # 直接从 ./temp/extras/ttf/ 复制并重命名
             extras_ttf_dir = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')
-            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING_LOOSE:
+            mapping = segoe_generate.get_segoe_mapping()
+            for segoe_name, inter_name in mapping:
                 src = os.path.join(extras_ttf_dir, inter_name)
                 dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 if os.path.exists(src):
@@ -137,13 +138,13 @@ if __name__ == '__main__':
                 infos = json.load(f)
             info_map = {info['file'].lower(): info for info in infos}
             # 直接批量处理
-            for segoe_name, inter_name in segoe_generate.SEGOE_MAPPING_LOOSE:
+            for segoe_name, inter_name in mapping:
                 segoe_out = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 info = info_map.get(segoe_name.lower())
                 if info and os.path.exists(segoe_out):
                     segoe_generate.copy_font_info(segoe_out, info)
             # 复制12个ttf到结果目录
-            for segoe_name, _ in segoe_generate.SEGOE_MAPPING_LOOSE:
+            for segoe_name, _ in mapping:
                 src = os.path.join(segoe_generate.DST_DIR, segoe_name)
                 if os.path.exists(src):
                     shutil.copy(src, result_subdir)
