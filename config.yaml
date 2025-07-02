@@ -1,6 +1,8 @@
 # 功能开关
-ENABLE_MS_YAHEI: true        # 是否生成微软雅黑（更纱黑体伪装）
+ENABLE_MS_YAHEI: 1        # 是否生成微软雅黑（更纱黑体伪装）
 ENABLE_SEGOE_UI: true         # 是否生成 Segoe UI（Inter 伪装）
+
+SARASA_VERSION_STYLE: hinted   # Sarasa 包类型：hinted、unhinted
 
 # 生成的微软雅黑数字风格: monospaced(等宽) 或 proportional(不等宽)
 MS_YAHEI_NUMERALS_STYLE: proportional 
@@ -15,7 +17,6 @@ SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
 # 下载设置
 DOWNLOAD_MODE: auto           # auto: 自动下载，local: 仅使用本地包
 DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
-SARASA_VERSION_STYLE: hinted        # Sarasa 包类型：hinted、unhinted
 
 # 其他选项
 CLEAN_TEMP_ON_SUCCESS: true  # 主流程完成后是否自动清理 temp 目录（true/false）

@@ -2,23 +2,27 @@
 
 ## 项目简介
 
-自动化生成具有更佳显示效果的系统字体替代方案：
 
-- 以 更纱黑体 -> 微软雅黑 (中文)
-- 以 Inter -> Segoe UI (英文)
+自动化生成更佳显示效果的系统字体替代方案：
 
-该项目仅限于开发与测试用途，不得用于商业生产环境。
+- 以更纱黑体（Sarasa Gothic）为基础，生成伪装的微软雅黑（MS YaHei）
+- 以 Inter 为基础，生成伪装的 Segoe UI
+
+本项目仅限开发与测试用途，不得用于商业生产环境。
 
 ---
 
 ## 目录结构
 
 ```
-├── auto_all.py           # 主流程入口，一键生成所有字体
-├── msyh_generate.py      # 微软雅黑伪装生成核心脚本
-├── segoe_generate.py     # Segoe UI 伪装生成核心脚本
-├── fetch_sarasa.py       # Sarasa Gothic 包下载与解压
-├── fetch_inter.py        # Inter 包下载与解压
+├── main.py               # 主流程入口
+├── project_utils.py      # 通用工具与目录/报告
+├── msyh_workflow.py      # 微软雅黑生成主流程
+├── segoe_workflow.py     # Segoe UI 生成主流程
+├── msyh_generate.py      # 微软雅黑生成核心脚本
+├── segoe_generate.py     # Segoe UI 生成核心脚本
+├── fetch_sarasa.py       # Sarasa Gothic 包版本获取、下载与解压
+├── fetch_inter.py        # Inter 包版本获取、下载与解压
 ├── copy_result.py        # 结果文件整理与输出
 ├── config.yaml           # 主配置文件
 ├── font_info/            # 字体 name 字段映射与元数据
@@ -147,7 +151,7 @@ CLEAN_TEMP_ON_SUCCESS: true  # 主流程完成后自动清理 temp
 主流程入口：
 
 ```shell
-python auto_all.py
+python main.py
 ```
 
 - 自动检测配置、准备目录
@@ -160,12 +164,15 @@ python auto_all.py
 
 ## 主要功能与原理
 
+- **高度模块化**：
+  - 微软雅黑与 Segoe UI 生成流程完全解耦，风格统一，便于维护和扩展
+  - 各自有独立 workflow 文件，主流程统一调度
 - **伪装生成**：
   - 微软雅黑：将 Sarasa SC/UiSC 多字重合成 TTC，批量重命名、替换补全 name 字段
   - Segoe UI：将 Inter 拆分、重命名、批量替换补全 name 字段
 - **自动化流程**：
-  - 支持本地包与在线下载、解压
-  - 结果目录自动递增
+  - 支持本地包与在线下载、解压，自动校验 Sarasa 包哈希
+  - 结果目录自动递增，自动生成详细版本报告（含源字体包版本信息）
 
 ---
 
@@ -185,11 +192,13 @@ Windows Registry Editor Version 5.00
 
 ---
 
+
 ## 注意事项
 
 - 需 Python 3.11+，低版本不保证可用
 - 字体包下载失败可手动放置至 `source_files/`
 - 结果仅供本地开发、测试用途，勿用于商业分发
+- 生成的 `version_report.txt` 会自动记录本次用到的 Sarasa/Inter 源包版本号，便于溯源和复现
 
 ---
 
