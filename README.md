@@ -114,18 +114,29 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 
 ## 配置说明
 
-所有流程均由 `config.yaml` 控制，示例：
+所有配置均由 `config.yaml` 控制：
 
 ```yaml
-ENABLE_MS_YAHEI: true        # 是否生成微软雅黑（更纱黑体伪装）
-ENABLE_SEGOE_UI: true        # 是否生成 Segoe UI（Inter 伪装）
-TEMP_DIR: ./temp             # 临时文件目录
-RESULT_DIR: ./result         # 结果输出目录
+ENABLE_MS_YAHEI: 1                # 是否生成微软雅黑（更纱黑体伪装）
+ENABLE_SEGOE_UI: true             # 是否生成 Segoe UI（Inter 伪装）
+SARASA_VERSION_STYLE: hinted      # Sarasa 包类型：hinted、unhinted
+TEMP_DIR: ./temp                  # 临时文件目录
+RESULT_DIR: ./result              # 结果输出目录
 SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
-DOWNLOAD_MODE: auto          # auto: 自动下载，local: 仅用本地包
-SARASA_VERSION_STYLE: hinted       # Sarasa 包类型：hinted、unhinted
-CLEAN_TEMP_ON_SUCCESS: true  # 主流程完成后自动清理 temp
+DOWNLOAD_MODE: auto               # auto: 自动下载，local: 仅使用本地包
+DOWNLOAD_TIMEOUT: 60              # 下载超时时间（秒）
+CLEAN_TEMP_ON_SUCCESS: true       # 主流程完成后是否自动清理 temp 目录
+
+# 生成的微软雅黑数字风格: monospaced 或 proportional
+MS_YAHEI_NUMERALS_STYLE: proportional 
+
+# 生成的Segoe UI 间距风格: loose 或 compact
+SEGOE_UI_SPACING_STYLE: compact
 ```
+
+- **更纱系列字体**（如 SarasaGothicSC、SarasaUiSC）的特点是中英文字符外观一致，无明显区分。其中，名称中**不带 `UI` 标识**的字体使用的是**不等宽设计**（Proportional），即每个字符宽度不同；而**带 `UI` 标识**的字体则采用**等宽设计**，尤其在显示阿拉伯数字时更为统一，且数字 **1 的底部多出一横**，适合用于界面显示。
+
+- **Inter 字体**提供两种常见变体：`InterDisplay` 和 `Inter`。两者字符外观一致，**带 `Display` 标识**的版本排版上会更加紧凑，更适合用于大段文本或屏幕显示场景。
 
 - **本地兜底**：如需手动准备字体包，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
 
