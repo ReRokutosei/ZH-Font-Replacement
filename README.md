@@ -33,19 +33,64 @@
 ## 流程总览
 
 ```mermaid
-flowchart TD
-    A[准备依赖与配置] --> B{字体源文件获取}
-    B -- 本地存在 --> C[解压 Sarasa/Inter 包]
-    B -- 自动下载 --> C
-    C --> D[生成伪装微软雅黑]
-    C --> E[生成伪装 Segoe UI]
-    D --> F[整理输出到 result/]
-    E --> F
-    F --> G{是否清理 temp?}
-    G -- 是 --> H[清理临时目录]
-    G -- 否 --> I[保留临时文件]
-    H --> J[流程结束]
-    I --> J
+graph TD
+    A[开始] --> B[读取config.yaml]
+    B --> C[开始流程]
+
+    C --> D{是否启用 ENABLE_MS_YAHEI?}
+    D -- 是 --> E[处理微软雅黑流程]
+
+    C --> F{是否启用 ENABLE_SEGOE_UI?}
+    F -- 是 --> G[处理Segoe UI流程]
+
+    subgraph 微软雅黑处理
+        E --> H{选择字体包类型}
+        H -- hinted --> I[获取hinted版本]
+        H -- unhinted --> J[获取unhinted版本]
+
+        I --> K{下载模式?}
+        J --> K
+
+        K -- auto --> L[在线获取最新版字体包]
+        K -- local --> M[使用本地更纱字体包]
+
+        L --> N[下载字体包]
+        N --> O[解压字体包]
+        M --> O
+
+        O --> S1{生成msyh的数字是否等宽?}
+        S1 -- monospaced --> P1[使用等宽映射表]
+        S1 -- proportional --> P2[使用不等宽映射表]
+        P1 --> Q[根据json表覆写元信息]
+        P2 --> Q
+        Q --> R[合并为TTC文件]
+        R --> S[复制ttc文件到结果目录]
+    end
+
+    subgraph Segoe UI处理
+        G --> T{下载模式?}
+        T -- auto --> U[在线获取最新版字体包]
+        T -- local --> V[使用本地Inter字体包]
+
+        U --> W[下载字体包]
+        W --> X[解压字体包]
+        V --> X
+
+        X --> S2{生成segoe的字符间距?}
+        S2 -- loose --> Y1[使用宽松映射表]
+        S2 -- compact --> Y2[使用紧凑映射表]
+        Y1 --> Z[根据json表覆写元信息]
+        Y2 --> Z
+        Z --> AA[复制ttf文件到结果目录]
+    end
+
+    S --> AB{清理temp目录?}
+    AA --> AB
+    AB -- true --> AC[清理temp文件夹]
+    AB -- false --> AD[保留临时文件]
+
+    AD --> AE[结束]
+    AC --> AE
 ```
 
 ---
@@ -74,7 +119,7 @@ TEMP_DIR: ./temp             # 临时文件目录
 RESULT_DIR: ./result         # 结果输出目录
 SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
 DOWNLOAD_MODE: auto          # auto: 自动下载，local: 仅用本地包
-SARASA_VERSION: hinted       # Sarasa 包类型：hinted、unhinted
+SARASA_VERSION_STYLE: hinted       # Sarasa 包类型：hinted、unhinted
 CLEAN_TEMP_ON_SUCCESS: true  # 主流程完成后自动清理 temp
 ```
 
