@@ -39,15 +39,55 @@ def create_directories():
 
 def get_new_result_dir():
     # 生成 result/ver{num}-{datetime} 子目录
-    now = datetime.datetime.now().strftime('%Y%m%d%H%M')
+    now = datetime.datetime.now()
+    now_dir = now.strftime('%Y%m%d%H%M') # 用于目录名
+    now_format = now.strftime('%Y年%m月%d日 %H:%M:%S') # 用于报告
     base = config.get('RESULT_DIR', './result')
+
     # 查找已有 verXX- 前缀
     exist = [x for x in os.listdir(base) if x.startswith('ver') and os.path.isdir(os.path.join(base, x))]
     nums = [int(x[3:5]) for x in exist if x[3:5].isdigit()]
     num = max(nums) + 1 if nums else 1
-    subdir = f'ver{num:02d}-{now}'
+    subdir = f'ver{num:02d}-{now_dir}'
     full = os.path.join(base, subdir)
     os.makedirs(full, exist_ok=True)
+
+    # 生成版本报告
+    report_lines = []
+    report_lines.append(f"生成时间: {now_format}")
+    report_lines.append("主要配置参数说明：")
+    explain_map = {
+        'ENABLE_MS_YAHEI': '生成微软雅黑字体',
+        'ENABLE_SEGOE_UI': '生成Segoe UI字体',
+        'SARASA_VERSION_STYLE': 'Sarasa 包类型',
+        'MS_YAHEI_NUMERALS_STYLE': '微软雅黑数字风格',
+        'SEGOE_UI_SPACING_STYLE': 'Segoe UI 间距风格',
+        'DOWNLOAD_MODE': '字体源文件获取方式',
+        'TEMP_DIR': '临时文件目录',
+        'RESULT_DIR': '结果输出目录',
+        'SOURCE_FILES_DIR': '源文件存放目录',
+        'CLEAN_TEMP_ON_SUCCESS': '清理临时目录',
+    }
+    for k, v in config.items():
+        if k in explain_map:
+            if k == 'ENABLE_MS_YAHEI' or k == 'ENABLE_SEGOE_UI':
+                v_str = '启用' if v else '禁用'
+            elif k == 'SARASA_VERSION_STYLE':
+                v_str = 'hinted' if v == 'hinted' else 'unhinted'
+            elif k == 'MS_YAHEI_NUMERALS_STYLE':
+                v_str = '等宽(monospaced)' if v == 'monospaced' else '不等宽(proportional)'
+            elif k == 'SEGOE_UI_SPACING_STYLE':
+                v_str = '宽松(loose)' if v == 'loose' else '紧凑(compact)'
+            elif k == 'CLEAN_TEMP_ON_SUCCESS':
+                v_str = '是' if v else '否'
+            elif k == 'DOWNLOAD_MODE':
+                v_str = '本地(local)' if v == 'local' else f'在线({v})'
+            else:
+                v_str = str(v)
+            report_lines.append(f"  {explain_map[k]}：{v_str}")
+    report_path = os.path.join(full, "version_report.txt")
+    with open(report_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(report_lines))
     return full
 
 def run_with_python(script, *args):
