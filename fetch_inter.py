@@ -14,7 +14,29 @@ with open(config_path, encoding='utf-8') as f:
 
 SOURCE_FILES_DIR = config.get('SOURCE_FILES_DIR', './source_files')
 TEMP_DIR = config.get('TEMP_DIR', './temp')
-API_URL = 'https://api.github.com/repos/rsms/inter/releases'
+
+INTER_API_URL = 'https://api.github.com/repos/rsms/inter/releases/latest'
+
+# 全局缓存
+_inter_version_cache = None
+
+def get_inter_version_and_assets():
+    """在线获取 Inter 最新版本信息"""
+    global _inter_version_cache
+    if _inter_version_cache is not None:
+        return _inter_version_cache
+    try:
+        response = req.get(INTER_API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
+        details = response.json()
+        version = details['tag_name']
+        assets = details.get('assets', [])
+        logging.info(f"获取 Inter 在线版本信息成功: {version}")
+        _inter_version_cache = (version, assets)
+        return version, assets
+    except Exception as e:
+        logging.error(f"获取 Inter 在线版本信息失败: {e}")
+        _inter_version_cache = (None, [])
+        return None, []
 
 def find_local_inter_zip():
     dir_ = os.path.normpath(SOURCE_FILES_DIR)
@@ -29,7 +51,7 @@ def find_local_inter_zip():
 
 def get_latest_inter_zip_url():
     try:
-        response = req.get(API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
+        response = req.get(INTER_API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))  # 兼容老逻辑，后续可重构
         releases = json.loads(response.content)
         for release in releases:
             if release.get('draft') or release.get('prerelease'):
