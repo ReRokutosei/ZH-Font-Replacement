@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import sys
+import time
 import zipfile
 
 import requests as req
@@ -51,11 +53,26 @@ def download(url, save_dir=None):
     target_path = os.path.normpath(os.path.join(save_dir, filename))
     if os.path.exists(target_path):
         return target_path
+    
     resp = req.get(url, timeout=config.get('DOWNLOAD_TIMEOUT', 10), stream=True)
+    total_size = int(resp.headers.get('content-length', 0))
+    downloaded_size = 0
+    start_time = time.time()
+    
     with open(target_path, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=8192):
             if chunk:
                 f.write(chunk)
+                downloaded_size += len(chunk)
+                
+                # 进度输出
+                progress = downloaded_size / total_size if total_size > 0 else 0
+                duration = time.time() - start_time
+                speed = downloaded_size / duration if duration > 0 else 0
+                
+                sys.stdout.write(f'\r下载进度: {downloaded_size}/{total_size} 字节 ({progress:.2%}) | 速度: {speed/1024:.2f} KB/s')
+                sys.stdout.flush()
+    
     return target_path
 
 def unzip_inter(path, out_dir=None):

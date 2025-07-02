@@ -127,17 +127,10 @@ if __name__ == '__main__':
                     logging.error("未找到任何可用的在线源文件包")
                     sys.exit(1)
                 for url in urls:
-                    filename = os.path.basename(url)
-                    local_path = os.path.normpath(os.path.join(config.get('SOURCE_FILES_DIR', './source_files'), filename))
-                    if os.path.exists(local_path):
-                        logging.info(f"已存在本地最新版本包，跳过下载: {filename}")
-                        logging.info(f"准备解压: {filename}")
-                        sarasa.unzip(local_path)
-                    else:
-                        logging.info(f"下载包: {url}")
-                        path = sarasa.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
-                        logging.info(f"准备解压: {os.path.basename(path)}")
-                        sarasa.unzip(path)
+                    # 在线信息校验本地包，校验失败自动重下，校验成功才解压
+                    path = sarasa.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
+                    logging.info(f"准备解压: {os.path.basename(path)}")
+                    sarasa.unzip(path)
         # 生成唯一结果子目录
         result_subdir = os.path.normpath(get_new_result_dir())
         # 生成微软雅黑字体
