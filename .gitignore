@@ -2,5 +2,4 @@ __pycache__/
 temp/
 result/
 source_files/
-test_merge_ttc.py
-pyfile_isort.py
+test/

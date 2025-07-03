@@ -57,15 +57,15 @@ msyh_mapping: [
 
 segoe_mapping: [
   ["segoeui.ttf",    "Inter-Regular.ttf"],
-  ["segoeuib.ttf",   "Inter-Bold.ttf"],
   ["segoeuii.ttf",   "Inter-Italic.ttf"],
-  ["segoeuil.ttf",   "Inter-Thin.ttf"],
   ["segoeuisl.ttf",  "Inter-Light.ttf"],
+  ["seguisli.ttf",   "Inter-LightItalic.ttf"],
+  ["segoeuil.ttf",   "Inter-Thin.ttf"],
+  ["seguili.ttf",    "Inter-ThinItalic.ttf"],
+  ["segoeuib.ttf",   "Inter-Bold.ttf"],
   ["segoeuiz.ttf",   "Inter-BoldItalic.ttf"],
   ["seguibl.ttf",    "Inter-Black.ttf"],
   ["seguibli.ttf",   "Inter-BlackItalic.ttf"],
-  ["seguili.ttf",    "Inter-ThinItalic.ttf"],
   ["seguisb.ttf",    "Inter-SemiBold.ttf"],
   ["seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"],
-  ["seguisli.ttf",   "Inter-LightItalic.ttf"],
 ]

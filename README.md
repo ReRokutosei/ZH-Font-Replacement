@@ -2,7 +2,6 @@
 
 ## 项目简介
 
-
 自动化生成更佳显示效果的系统字体替代方案：
 
 - 以更纱黑体（Sarasa Gothic）为基础，生成伪装的微软雅黑（MS YaHei）
@@ -10,26 +9,40 @@
 
 本项目仅限开发与测试用途，不得用于商业生产环境。
 
+- [ZH-Font-Replacement](#zh-font-replacement)
+  - [项目简介](#项目简介)
+  - [项目结构](#项目结构)
+  - [流程总览](#流程总览)
+  - [环境要求](#环境要求)
+  - [依赖安装](#依赖安装)
+  - [配置说明](#配置说明)
+  - [一键生成流程](#一键生成流程)
+  - [主要功能与原理](#主要功能与原理)
+  - [设置额外字重生效（Windows）](#设置额外字重生效windows)
+  - [注意事项](#注意事项)
+  - [License](#license)
+  - [免责声明](#免责声明)
+  - [致谢](#致谢)
+  - [附FullName表](#附fullname表)
+
 ---
 
-## 目录结构
+## 项目结构
 
 ```
 ├── main.py               # 主流程入口
-├── project_utils.py      # 通用工具与目录/报告
+├── project_utils.py      # 通用工具集
 ├── msyh_workflow.py      # 微软雅黑生成主流程
 ├── segoe_workflow.py     # Segoe UI 生成主流程
 ├── msyh_generate.py      # 微软雅黑生成核心脚本
 ├── segoe_generate.py     # Segoe UI 生成核心脚本
 ├── fetch_sarasa.py       # Sarasa Gothic 包版本获取、下载与解压
 ├── fetch_inter.py        # Inter 包版本获取、下载与解压
-├── copy_result.py        # 结果文件整理与输出
 ├── config.yaml           # 主配置文件
 ├── font_info/            # 字体 name 字段映射与元数据
 ├── result/               # 生成结果输出目录
-├── source_files/         # 字体源文件目录（本地兜底/自动下载）
-├── temp/                 # 临时文件目录
-└── ...
+├── source_files/         # 字体源包目录
+└── temp/                 # 临时文件目录
 ```
 
 ---
@@ -55,7 +68,7 @@ graph TD
         I --> K{下载模式?}
         J --> K
 
-        K -- auto --> L[在线获取最新版字体包]
+        K -- online --> L[在线获取最新版字体包]
         K -- local --> M[使用本地更纱字体包]
 
         L --> N[下载字体包]
@@ -73,7 +86,7 @@ graph TD
 
     subgraph Segoe UI处理
         G --> T{下载模式?}
-        T -- auto --> U[在线获取最新版字体包]
+        T -- online --> U[在线获取最新版字体包]
         T -- local --> V[使用本地Inter字体包]
 
         U --> W[下载字体包]
@@ -123,7 +136,7 @@ SARASA_VERSION_STYLE: hinted      # Sarasa 包类型：hinted、unhinted
 TEMP_DIR: ./temp                  # 临时文件目录
 RESULT_DIR: ./result              # 结果输出目录
 SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
-DOWNLOAD_MODE: auto               # auto: 自动下载，local: 仅使用本地包
+FONT_PACKAGE_SOURCE: online               # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
 DOWNLOAD_TIMEOUT: 60              # 下载超时时间（秒）
 CLEAN_TEMP_ON_SUCCESS: true       # 主流程完成后是否自动清理 temp 目录
 
@@ -132,11 +145,19 @@ MS_YAHEI_NUMERALS_STYLE: proportional
 
 # 生成的Segoe UI 间距风格: loose 或 compact
 SEGOE_UI_SPACING_STYLE: compact
+
+# 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
+# CUSTOM_MS_YAHEI_PACKAGE: 指定的自定义中文字体包（zip/7z），放在字体源文件目录
+# CUSTOM_SEGOE_PACKAGE: 指定的自定义英文字体包（zip/7z），放在字体源文件目录
 ```
 
-- **更纱系列字体**（如 SarasaGothicSC、SarasaUiSC）的特点是中英文字符外观一致，无明显区分。其中，名称中**不带 `UI` 标识**的字体使用的是**不等宽设计**（Proportional），即每个字符宽度不同；而**带 `UI` 标识**的字体则采用**等宽设计**，尤其在显示阿拉伯数字时更为统一，且数字 **1 的底部多出一横**，适合用于界面显示。
+- **更纱系列字体**（ SarasaGothicSC、SarasaUiSC）中英文字符外观一致。
+  - 在阿拉伯数字上有区别：
+    - **不带 `UI` 标识**的是**不等宽设计**（Proportional），即每个字符宽度不同；
+    - 而**有 `UI` 标识**的则是**等宽设计**，且数字 **1 的底部多出一横**。
 
-- **Inter 字体**提供两种常见变体：`InterDisplay` 和 `Inter`。两者字符外观一致，**带 `Display` 标识**的版本排版上会更加紧凑，更适合用于大段文本或屏幕显示场景。
+- **Inter 字体**包含两种常见变体：`InterDisplay` 和 `Inter`。两者字符外观一致。
+  - 区别在于，**带 `Display` 标识**的排版上会更加紧凑。
 
 - **本地兜底**：如需手动准备字体包，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
 
@@ -150,10 +171,11 @@ SEGOE_UI_SPACING_STYLE: compact
 
   > 注意：
   > - 文件名必须与官方 release 保持一致，否则自动识别会失败。
-  > - 只需下载上述压缩包，无需手动解压，脚本会自动处理。
-  > - 若只需生成某一类字体，可在 `config.yaml` 关闭对应开关。
+  > - 只需下载上述压缩包，无需手动解压。
 
-- **自动下载**：在yaml设置 `DOWNLOAD_MODE: auto` 后，将自动下载最新字体包；若本地已有最新版本则跳过
+- **在线下载**：在yaml设置 `FONT_PACKAGE_SOURCE: online` 后，将自动下载最新字体包；若本地已有最新版本则跳过
+
+- **自定义字体包**：通过 `FONT_PACKAGE_SOURCE: custom` 设置后，可以使用任意字体包，并指定自定义映射规则。
 
 ---
 
@@ -225,9 +247,57 @@ Windows Registry Editor Version 5.00
 - 所有生成字体均为伪装产物，非官方版本，与 Microsoft、Be5invis、Rasmus Andersson 等原作者无关。
 - 使用本项目造成的任何后果，作者概不负责。
 
+---
+
 ## 致谢
 
 - [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic) 及其作者 Be5invis
 - [Inter](https://github.com/rsms/inter) 及其作者 Rasmus Andersson
 - [fontTools](https://github.com/fonttools/fonttools) 及相关开源社区
 - 以及所有为字体自由与开源生态做出贡献的开发者
+
+---
+
+## 附FullName表
+>附上msyh-Ver6.30、msyh-Ver11.3、segoeUI-Ver5.62
+>的FullName(NameID=4, Lang=2052 or Lang=1032)的CSV表
+>仅供参考
+
+```csv
+File,Index,Full Names
+msyh.ttc,0,微软雅黑
+msyh.ttc,1,Microsoft Yahei UI
+msyhbd.ttc,0,微软雅黑 Bold
+msyhbd.ttc,1,Microsoft Yahei UI Bold
+msyhl.ttc,0,微软雅黑 Light
+msyhl.ttc,1,Microsoft YaHei UI Light```
+
+```csv
+File,Index,Full Names
+msyh.ttc,0,Microsoft YaHei
+msyh.ttc,1,Microsoft YaHei UI
+msyhbd.ttc,0,Microsoft YaHei Bold
+msyhbd.ttc,1,Microsoft YaHei UI Bold
+msyhhv.ttc,0,Microsoft YaHei Heavy
+msyhhv.ttc,1,Microsoft YaHei UI Heavy
+msyhl.ttc,0,Microsoft YaHei Light
+msyhl.ttc,1,Microsoft YaHei UI Light
+msyhsb.ttc,0,Microsoft YaHei Semibold
+msyhsb.ttc,1,Microsoft YaHei UI Semibold
+msyhsl.ttc,0,Microsoft YaHei Semilight
+msyhsl.ttc,1,Microsoft YaHei UI Semilight```
+
+```csv
+File,Index,Full Names
+segoeui.ttf,0,Segoe UI
+segoeuib.ttf,0,Segoe UI Bold
+segoeuii.ttf,0,Segoe UI Italic
+segoeuil.ttf,0,Segoe UI Light
+segoeuisl.ttf,0,Segoe UI Semilight
+segoeuiz.ttf,0,Segoe UI Bold Italic
+seguibl.ttf,0,Segoe UI Black
+seguibli.ttf,0,Segoe UI Black Italic
+seguili.ttf,0,Segoe UI Light Italic
+seguisb.ttf,0,Segoe UI Semibold
+seguisbi.ttf,0,Segoe UI Semibold Italic
+seguisli.ttf,0,Segoe UI Semilight Italic```
