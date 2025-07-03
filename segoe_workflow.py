@@ -1,20 +1,20 @@
 import json
 import logging
 import os
-import shutil
 
 import fetch_inter as inter
 import project_utils
 import segoe_generate
-from project_utils import extract_custom_font_packages, safe_copy
+from project_utils import (extract_custom_font_packages, get_config_value,
+                           safe_copy)
 
 
 def generate_segoe_ui(config, result_subdir):
     logging.info("开始处理Inter->Segoe UI流程")
-    temp_dir = config.get('TEMP_DIR', './temp')
+    temp_dir = get_config_value(config, 'TEMP_DIR', './temp')
     mapping = segoe_generate.get_segoe_mapping()
     # custom 模式下直接用 config.yaml 指定的自定义英文字体包
-    if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
+    if get_config_value(config, 'FONT_PACKAGE_SOURCE', 'local') == 'custom':
         # 若 temp 目录下未解压则主动解压一次
         extract_custom_font_packages(config)
     else:

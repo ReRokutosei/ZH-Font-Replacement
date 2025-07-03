@@ -1,10 +1,8 @@
 import hashlib
 import logging
 import os
-import sys
 import time
 
-import py7zr as sz
 import requests as req
 import yaml
 

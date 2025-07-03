@@ -1,14 +1,13 @@
 import logging
 import os
-import shutil
 import subprocess
 import sys
 
-import yaml
 
-import project_utils
+from project_utils import (find_font_file, get_config_value, load_config,
+                           safe_copy)
 
-config = project_utils.load_config()
+config = load_config()
 
 def run_with_python(script, *args):
     result = subprocess.run([sys.executable, script] + list(args))
@@ -21,7 +20,7 @@ def check_ttc_generated(config):
     # 用 find_font_file 检查每个文件是否存在
     for f in ttc_files:
         try:
-            project_utils.find_font_file(temp_dir, f)
+            find_font_file(temp_dir, f)
         except Exception:
             return False
     return True
@@ -32,10 +31,11 @@ def copy_result(result_dir):
         'msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc', 'msyhxl.ttc', 'msyhsb.ttc'
     ]
 
+
     for file in main_files:
-        src = os.path.join(config.get('TEMP_DIR', './temp'), file)
+        src = os.path.join(get_config_value(config, 'TEMP_DIR', './temp'), file)
         try:
-            project_utils.safe_copy(src, result_dir)
+            safe_copy(src, result_dir)
         except Exception:
             pass
 
@@ -51,4 +51,4 @@ def generate_ms_yahei(config, result_subdir):
         logging.info("微软雅黑字体生成完成，并已复制到结果目录")
     else:
         logging.error("微软雅黑字体未生成任何文件，请检查流程！")
-        sys.exit(1)
+        raise RuntimeError("微软雅黑字体未生成任何文件，请检查流程！")

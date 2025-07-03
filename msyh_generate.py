@@ -1,11 +1,10 @@
+import logging
 import json
 import os
-import shutil as fs
 import sys
 
 import yaml
-from fontTools.ttLib import TTCollection, TTFont, newTable
-from fontTools.ttLib.tables._n_a_m_e import NameRecord
+from fontTools.ttLib import TTCollection, TTFont
 
 from project_utils import find_font_file, safe_copy
 
@@ -106,18 +105,20 @@ def fix_postscript_name(name):
 
 def set_names_with_json(ttf_path, file_name):
     ttc, index = parse_ttf_filename(file_name)
+    
     if not ttc or index is None:
-        print(f"[WARN] 无法解析 {file_name} 的 ttc 组和 index，跳过 name 字段设置")
+        logging.warning(f"无法解析 {file_name} 的 ttc 组和 index，跳过 name 字段设置")
         return
     key = (ttc.lower(), index)
     info = font_info_map.get(key)
     if not info:
-        print(f"[WARN] 未找到 {ttc} index={index} 的元信息，跳过 name 字段设置")
+        logging.warning(f"未找到 {ttc} index={index} 的元信息，跳过 name 字段设置")
         return
     font = TTFont(ttf_path)
     name_table = font["name"]
     if not hasattr(name_table, "setName"):
-        print(f"[ERROR] font['name'] 没有 setName 方法，无法设置 name 字段。请检查 fontTools 版本或字体文件: {ttf_path}")
+        
+        logging.error(f"font['name'] 没有 setName 方法，无法设置 name 字段。请检查 fontTools 版本或字体文件: {ttf_path}")
         return
     for field in info.get('name_fields', []):
         parts = dict(item.strip().split('=', 1) for item in field.split(',') if '=' in item)
@@ -132,7 +133,7 @@ def set_names_with_json(ttf_path, file_name):
         try:
             name_table.setName(value, nameID, platformID, platEncID, langID)
         except Exception as e:
-            print(f"[WARN] setName failed: {e}")
+            logging.warning(f"setName failed: {e}")
     font.save(ttf_path)
 
 
@@ -159,7 +160,8 @@ def batch_copy_msyh_ttf():
             dst_path = os.path.join(temp_dir, dst)
             safe_copy(src_path, dst_path)
         except Exception as e:
-            print(f"[WARN] 源字体不存在: {src}，查找异常: {e}")
+            
+            logging.warning(f"源字体不存在: {src}，查找异常: {e}")
 
 def batch_patch_names():
     mapping = get_msyh_mapping()
@@ -173,7 +175,6 @@ def generate_ttc_with_fonttools(ttf_list, ttc_path):
     """
     用 FontTools 合并 ttf_list 为 ttc_path，兼容新版和旧版 fontTools
     """
-    from fontTools.ttLib import TTCollection, TTFont
     fonts = [TTFont(ttf, recalcBBoxes=False, recalcTimestamp=False) for ttf in ttf_list]
     try:
         ttc = TTCollection(fonts)
@@ -193,14 +194,17 @@ def batch_generate_ttc(ttc_names=None):
         ttf_paths = [os.path.abspath(os.path.join(config['TEMP_DIR'], ttf)) for ttf in ttf_list]
         ttf_paths_exist = [p for p in ttf_paths if os.path.exists(p)]
         if len(ttf_paths_exist) != 4:
-            print(f"[WARN] 生成 {ttc_name} 时有缺失: {ttf_paths_exist}")
+            
+            logging.warning(f"生成 {ttc_name} 时有缺失: {ttf_paths_exist}")
             continue
         ttc_path = os.path.abspath(os.path.join(config['TEMP_DIR'], ttc_name))
         try:
             generate_ttc_with_fonttools(ttf_paths_exist, ttc_path)
-            print(f"[INFO] 生成 {ttc_name} 成功 (FontTools)")
+            
+            logging.info(f"生成 {ttc_name} 成功 (FontTools)")
         except Exception as e:
-            print(f"[ERROR] 生成 {ttc_name} 失败 (FontTools): {e}")
+            
+            logging.error(f"生成 {ttc_name} 失败 (FontTools): {e}")
 
 
 def check_ttc_generated():

@@ -1,9 +1,7 @@
 import json
 import logging
 import os
-import sys
 import time
-import zipfile
 
 import requests as req
 import yaml

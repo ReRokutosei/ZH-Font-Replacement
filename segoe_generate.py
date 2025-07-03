@@ -1,16 +1,16 @@
 import json
+import logging
 import os
-import shutil
 
-import yaml
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
-from project_utils import find_font_file, load_config, safe_copy
+from project_utils import (find_font_file, get_config_value, load_config,
+                           safe_copy)
 
 config = load_config()
-REF_DIR = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')  # 直接使用解压后的单独ttf目录
-DST_DIR = config.get('TEMP_DIR', './temp')
+# REF_DIR = os.path.join(get_config_value(config, 'TEMP_DIR', './temp'), 'extras', 'ttf')  # 直接使用解压后的单独ttf目录
+DST_DIR = get_config_value(config, 'TEMP_DIR', './temp')
 FONT_INFO_DIR = './font_info'
 
 
@@ -48,12 +48,12 @@ SEGOE_MAPPING_COMPACT = [
 
 def get_segoe_mapping():
     # 支持 custom 模式
-    if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
-        mapping = config.get('segoe_mapping', [])
+    if get_config_value(config, 'FONT_PACKAGE_SOURCE', 'local') == 'custom':
+        mapping = get_config_value(config, 'segoe_mapping', [])
         if isinstance(mapping, dict):
             return list(mapping.items())
         return [tuple(x) for x in mapping]
-    style = config.get('SEGOE_UI_SPACING_STYLE', 'loose').lower()
+    style = get_config_value(config, 'SEGOE_UI_SPACING_STYLE', 'loose').lower()
     if style == 'compact':
         return SEGOE_MAPPING_COMPACT
     return SEGOE_MAPPING_LOOSE
@@ -81,7 +81,7 @@ def batch_rename_and_patch():
         infos = json.load(f)
     info_map = {info['file'].lower(): info for info in infos}
     mapping = get_segoe_mapping()
-    temp_dir = config.get('TEMP_DIR', './temp')
+    temp_dir = get_config_value(config, 'TEMP_DIR', './temp')
     for segoe_name, inter_name in mapping:
         try:
             rel_inter_path = find_font_file(temp_dir, inter_name)
@@ -92,7 +92,7 @@ def batch_rename_and_patch():
             if info:
                 copy_font_info(segoe_out, info)
         except Exception as e:
-            print(f"[WARN] 找不到源字体: {inter_name}，查找异常: {e}")
+            logging.warning(f"找不到源字体: {inter_name}，查找异常: {e}")
 
 
 if __name__ == '__main__':

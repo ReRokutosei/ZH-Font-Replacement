@@ -4,8 +4,8 @@ import os
 import fetch_sarasa as sarasa
 from msyh_workflow import generate_ms_yahei
 from project_utils import (clean_temp_dir, create_directories,
-                           extract_custom_font_packages, get_new_result_dir,
-                           load_config, validate_config)
+                           extract_custom_font_packages, get_config_value,
+                           get_new_result_dir, load_config, validate_config)
 from segoe_workflow import generate_segoe_ui
 
 logging.basicConfig(
@@ -21,8 +21,8 @@ def main():
         validate_config(config)
         create_directories(config)
         # 获取所有源文件包或处理自定义包
-        download_mode = config.get('FONT_PACKAGE_SOURCE', 'local')
-        if config.get('ENABLE_MS_YAHEI', True):
+        download_mode = get_config_value(config, 'FONT_PACKAGE_SOURCE', 'local')
+        if get_config_value(config, 'ENABLE_MS_YAHEI', True):
             if download_mode == 'custom':
                 # custom 模式下，解压自定义字体包到 temp 目录（仅支持 zip/7z）
                 try:
@@ -30,12 +30,12 @@ def main():
                     logging.info("自定义字体包已全部解压到临时目录")
                 except Exception as e:
                     logging.error(f"自定义字体包解压失败: {e}")
-                    raise SystemExit(1)
+                    raise
             elif download_mode == 'local':
                 packages = sarasa.find_all_local_packages()
                 if not packages:
                     logging.error("未找到任何本地源文件包，请检查 source_files 目录")
-                    raise SystemExit(1)
+                    raise
                 for pkg in packages:
                     logging.info(f"本地包: {pkg}")
                     sarasa.unzip(pkg)
@@ -43,26 +43,26 @@ def main():
                 urls = sarasa.get_all_latest()
                 if not urls:
                     logging.error("未找到任何可用的在线源文件包")
-                    raise SystemExit(1)
+                    raise
                 for url in urls:
-                    path = sarasa.download(url, save_dir=config.get('SOURCE_FILES_DIR', './source_files'))
+                    path = sarasa.download(url, save_dir=get_config_value(config, 'SOURCE_FILES_DIR', './source_files'))
                     logging.info(f"准备解压: {os.path.basename(path)}")
                     sarasa.unzip(path)
         # 生成唯一结果子目录
         result_subdir = get_new_result_dir(config)
         # 生成微软雅黑字体
-        if config.get('ENABLE_MS_YAHEI', True):
+        if get_config_value(config, 'ENABLE_MS_YAHEI', True):
             generate_ms_yahei(config, result_subdir)
         # 生成Segoe UI字体
-        if config.get('ENABLE_SEGOE_UI', True):
+        if get_config_value(config, 'ENABLE_SEGOE_UI', True):
             generate_segoe_ui(config, result_subdir)
         logging.info(f"所有字体生成完成，结果目录：{result_subdir}")
         # 自动清理 temp 目录（可选）
-        if config.get('CLEAN_TEMP_ON_SUCCESS', False):
+        if get_config_value(config, 'CLEAN_TEMP_ON_SUCCESS', False):
             clean_temp_dir(config)
     except Exception as e:
         logging.error(f"程序执行出错: {str(e)}")
-        raise SystemExit(1)
+        raise
 
 if __name__ == '__main__':
     main()
