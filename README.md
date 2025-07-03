@@ -147,8 +147,8 @@ MS_YAHEI_NUMERALS_STYLE: proportional
 SEGOE_UI_SPACING_STYLE: compact
 
 # 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
-# CUSTOM_MS_YAHEI_PACKAGE: 指定的自定义中文字体包（zip/7z），放在字体源文件目录
-# CUSTOM_SEGOE_PACKAGE: 指定的自定义英文字体包（zip/7z），放在字体源文件目录
+# CUSTOM_MS_YAHEI_PACKAGE: 指定的自定义中文字体包（zip/7z），需放在字体源文件目录
+# CUSTOM_SEGOE_PACKAGE: 指定的自定义英文字体包（zip/7z），需放在字体源文件目录
 ```
 
 - **更纱系列字体**（ SarasaGothicSC、SarasaUiSC）中英文字符外观一致。
