@@ -4,7 +4,8 @@ import os
 import fetch_sarasa as sarasa
 from msyh_workflow import generate_ms_yahei
 from project_utils import (clean_temp_dir, create_directories,
-                           get_new_result_dir, load_config, validate_config)
+                           extract_custom_font_packages, get_new_result_dir,
+                           load_config, validate_config)
 from segoe_workflow import generate_segoe_ui
 
 logging.basicConfig(
@@ -19,9 +20,18 @@ def main():
         logging.info("开始字体生成流程")
         validate_config(config)
         create_directories(config)
-        # 获取所有源文件包
+        # 获取所有源文件包或处理自定义包
+        download_mode = config.get('FONT_PACKAGE_SOURCE', 'local')
         if config.get('ENABLE_MS_YAHEI', True):
-            if config.get('DOWNLOAD_MODE', 'local') == 'local':
+            if download_mode == 'custom':
+                # custom 模式下，解压自定义字体包到 temp 目录（仅支持 zip/7z）
+                try:
+                    extract_custom_font_packages(config)
+                    logging.info("自定义字体包已全部解压到临时目录")
+                except Exception as e:
+                    logging.error(f"自定义字体包解压失败: {e}")
+                    raise SystemExit(1)
+            elif download_mode == 'local':
                 packages = sarasa.find_all_local_packages()
                 if not packages:
                     logging.error("未找到任何本地源文件包，请检查 source_files 目录")

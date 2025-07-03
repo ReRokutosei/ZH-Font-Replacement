@@ -3,16 +3,22 @@ import logging
 import os
 import shutil
 
+import fetch_inter as inter
 import project_utils
 import segoe_generate
+from project_utils import extract_custom_font_packages
 
 
 def generate_segoe_ui(config, result_subdir):
     logging.info("开始处理Inter->Segoe UI流程")
-    import fetch_inter as inter
-    inter.fetch_inter()  # 下载并解压Inter
     temp_dir = config.get('TEMP_DIR', './temp')
     mapping = segoe_generate.get_segoe_mapping()
+    # custom 模式下直接用 config.yaml 指定的自定义英文字体包
+    if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
+        # 若 temp 目录下未解压则主动解压一次
+        extract_custom_font_packages(config)
+    else:
+        inter.fetch_inter()  # 下载并解压Inter
     for segoe_name, inter_name in mapping:
         try:
             rel_src_path = project_utils.find_font_file(temp_dir, inter_name)

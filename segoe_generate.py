@@ -52,6 +52,12 @@ SEGOE_MAPPING_COMPACT = [
 ]
 
 def get_segoe_mapping():
+    # 支持 custom 模式
+    if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
+        mapping = config.get('segoe_mapping', [])
+        if isinstance(mapping, dict):
+            return list(mapping.items())
+        return [tuple(x) for x in mapping]
     style = config.get('SEGOE_UI_SPACING_STYLE', 'loose').lower()
     if style == 'compact':
         return SEGOE_MAPPING_COMPACT

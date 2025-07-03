@@ -2,7 +2,9 @@ import datetime
 import logging
 import os
 import shutil
+import zipfile
 
+import py7zr as sz
 import yaml
 
 
@@ -69,55 +71,74 @@ def write_version_report(config, now_format, full):
 
     # 源字体包版本信息
     report_lines.extend(["", "源字体包版本信息："])
+    if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
+        # custom 模式下仅写入自定义字体包文件名
+        ms_pkg = config.get('CUSTOM_MS_YAHEI_PACKAGE', '')
+        se_pkg = config.get('CUSTOM_SEGOE_PACKAGE', '')
+        if ms_pkg:
+            report_lines.append(f"  MSYH 字体包: {ms_pkg}")
+        if se_pkg:
+            report_lines.append(f"  Segoe UI 字体包: {se_pkg}")
+    else:
+        # Sarasa 版本
+        try:
+            from fetch_sarasa import get_version_and_assets
+            sarasa_version, _ = get_version_and_assets()
+            if sarasa_version:
+                report_lines.append(f"  Sarasa Gothic: {sarasa_version}")
+        except Exception as e:
+            report_lines.append(f"  Sarasa Gothic: 获取失败 ({e})")
 
-    # Sarasa 版本
-    try:
-        from fetch_sarasa import get_version_and_assets
-        sarasa_version, _ = get_version_and_assets()
-        if sarasa_version:
-            report_lines.append(f"  Sarasa Gothic: {sarasa_version}")
-    except Exception as e:
-        report_lines.append(f"  Sarasa Gothic: 获取失败 ({e})")
-
-    # Inter 版本
-    try:
-        from fetch_inter import get_inter_version_and_assets
-        inter_version, _ = get_inter_version_and_assets()
-        if inter_version:
-            report_lines.append(f"  Inter: {inter_version}")
-    except Exception as e:
-        report_lines.append(f"  Inter: 获取失败 ({e})")
+        # Inter 版本
+        try:
+            from fetch_inter import get_inter_version_and_assets
+            inter_version, _ = get_inter_version_and_assets()
+            if inter_version:
+                report_lines.append(f"  Inter: {inter_version}")
+        except Exception as e:
+            report_lines.append(f"  Inter: 获取失败 ({e})")
 
     # 主要配置参数说明
     report_lines.append("主要配置参数说明：")
 
-    explain_map = {
-        'ENABLE_MS_YAHEI': '生成微软雅黑字体',
-        'ENABLE_SEGOE_UI': '生成Segoe UI字体',
-        'SARASA_VERSION_STYLE': 'Sarasa 包类型',
-        'MS_YAHEI_NUMERALS_STYLE': '微软雅黑数字风格',
-        'SEGOE_UI_SPACING_STYLE': 'Segoe UI 间距风格',
-        'DOWNLOAD_MODE': '字体源文件获取方式',
-        'TEMP_DIR': '临时文件目录',
-        'RESULT_DIR': '结果输出目录',
-        'SOURCE_FILES_DIR': '源文件存放目录',
-        'CLEAN_TEMP_ON_SUCCESS': '清理临时目录',
-    }
-
+    if config.get('FONT_PACKAGE_SOURCE', 'custom') == 'custom':
+        explain_map = {
+            'ENABLE_MS_YAHEI': '生成微软雅黑字体',
+            'ENABLE_SEGOE_UI': '生成Segoe UI字体',
+            'FONT_PACKAGE_SOURCE': '字体源文件获取方式',
+            'TEMP_DIR': '临时文件目录',
+            'RESULT_DIR': '结果输出目录',
+            'SOURCE_FILES_DIR': '源文件存放目录',
+            'CLEAN_TEMP_ON_SUCCESS': '清理临时目录',
+        }
+    else:
+        explain_map = {
+            'ENABLE_MS_YAHEI': '生成微软雅黑字体',
+            'ENABLE_SEGOE_UI': '生成Segoe UI字体',
+            'SARASA_VERSION_STYLE': 'Sarasa 包类型',
+            'MS_YAHEI_NUMERALS_STYLE': '微软雅黑数字风格',
+            'SEGOE_UI_SPACING_STYLE': 'Segoe UI 间距风格',
+            'FONT_PACKAGE_SOURCE': '字体源文件获取方式',
+            'TEMP_DIR': '临时文件目录',
+            'RESULT_DIR': '结果输出目录',
+            'SOURCE_FILES_DIR': '源文件存放目录',
+            'CLEAN_TEMP_ON_SUCCESS': '清理临时目录',
+        }
     for k, v in config.items():
         if k in explain_map:
             if k in ['ENABLE_MS_YAHEI', 'ENABLE_SEGOE_UI']:
                 v_str = '启用' if v else '禁用'
-            elif k == 'SARASA_VERSION_STYLE':
-                v_str = 'hinted' if v == 'hinted' else 'unhinted'
-            elif k == 'MS_YAHEI_NUMERALS_STYLE':
-                v_str = '等宽(monospaced)' if v == 'monospaced' else '不等宽(proportional)'
-            elif k == 'SEGOE_UI_SPACING_STYLE':
-                v_str = '宽松(loose)' if v == 'loose' else '紧凑(compact)'
             elif k == 'CLEAN_TEMP_ON_SUCCESS':
                 v_str = '是' if v else '否'
-            elif k == 'DOWNLOAD_MODE':
-                v_str = '本地(local)' if v == 'local' else f'在线({v})'
+            elif k == 'FONT_PACKAGE_SOURCE':
+                if v == 'local':
+                    v_str = '本地(local)'
+                elif v == 'online':
+                    v_str = '在线(online)'
+                elif v == 'custom':
+                    v_str = '自定义(custom)'
+                else:
+                    v_str = str(v)
             else:
                 v_str = str(v)
             report_lines.append(f"  {explain_map[k]}: {v_str}")
@@ -126,6 +147,39 @@ def write_version_report(config, now_format, full):
     report_path = os.path.join(full, "version_report.txt")
     with open(report_path, "w", encoding="utf-8") as f:
         f.write("\n".join(report_lines))
+
+
+# 解压自定义字体包（ custom 模式调用）
+def extract_custom_font_packages(config):
+    """
+    解压 config.yaml 中指定的 CUSTOM_MS_YAHEI_PACKAGE 和 CUSTOM_SEGOE_PACKAGE 到 TEMP_DIR。
+    仅支持 zip/7z 格式。
+    """
+    source_dir = os.path.abspath(config.get('SOURCE_FILES_DIR', './source_files'))
+    temp_dir = os.path.abspath(config.get('TEMP_DIR', './temp'))
+    os.makedirs(temp_dir, exist_ok=True)
+    def extract_font_package(pkg_name, desc):
+        if not pkg_name:
+            raise RuntimeError(f"未指定{desc}自定义字体包路径 (config.yaml)")
+        pkg_path = pkg_name if os.path.isabs(pkg_name) else os.path.join(source_dir, pkg_name)
+        pkg_path = os.path.abspath(pkg_path)
+        if not os.path.isfile(pkg_path):
+            raise RuntimeError(f"自定义字体包不存在: {pkg_path}")
+        ext = os.path.splitext(pkg_path)[1].lower()
+        if ext == '.zip':
+            with zipfile.ZipFile(pkg_path, 'r') as zf:
+                zf.extractall(temp_dir)
+        elif ext == '.7z':
+            with sz.SevenZipFile(pkg_path, mode='r') as archive:
+                archive.extractall(path=temp_dir)
+        else:
+            raise RuntimeError(f"仅支持 zip/7z 格式，自定义字体包错误: {pkg_path}")
+
+    if config.get('ENABLE_MS_YAHEI', True):
+        extract_font_package(config.get('CUSTOM_MS_YAHEI_PACKAGE', ''), True)
+    if config.get('ENABLE_SEGOE_UI', True):
+        extract_font_package(config.get('CUSTOM_SEGOE_PACKAGE', ''), True)
+
 
 # 清理临时目录
 def clean_temp_dir(config):

@@ -137,6 +137,13 @@ def set_names_with_json(ttf_path, file_name):
 
 
 def get_msyh_mapping():
+    # 支持 custom 模式
+    if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
+        mapping = config.get('msyh_mapping', [])
+        # 允许为 dict 或 list，自动转为 (dst, src) 列表
+        if isinstance(mapping, dict):
+            return list(mapping.items())
+        return [tuple(x) for x in mapping]
     style = config.get('MS_YAHEI_NUMERALS_STYLE', 'monospaced').lower()
     if style == 'proportional':
         return MSYH_MAPPING_PROPORTIONAL
