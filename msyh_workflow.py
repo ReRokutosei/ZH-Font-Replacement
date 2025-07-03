@@ -3,14 +3,14 @@ import os
 import subprocess
 import sys
 
-
 from project_utils import (find_font_file, get_config_value, load_config,
                            safe_copy)
 
 config = load_config()
 
 def run_with_python(script, *args):
-    result = subprocess.run([sys.executable, script] + list(args))
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    result = subprocess.run([sys.executable, script] + list(args), cwd=root_dir)
     if result.returncode != 0:
         raise RuntimeError(f"{script} {' '.join(args)} 执行失败")
 
@@ -30,14 +30,13 @@ def copy_result(result_dir):
     main_files = [
         'msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc', 'msyhxl.ttc', 'msyhsb.ttc'
     ]
-
-
     for file in main_files:
         src = os.path.join(get_config_value(config, 'TEMP_DIR', './temp'), file)
+        dst = os.path.join(result_dir, file)
         try:
-            safe_copy(src, result_dir)
+            safe_copy(src, dst)
         except Exception:
-            pass
+            logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
 
 def generate_ms_yahei(config, result_subdir):
     logging.info("开始生成微软雅黑字体")

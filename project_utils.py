@@ -130,30 +130,34 @@ def write_version_report(config, now_format, full):
     report_lines.extend(["", "源字体包版本信息："])
     if config.get('FONT_PACKAGE_SOURCE', 'local') == 'custom':
         # custom 模式下仅写入自定义字体包文件名
-        ms_pkg = config.get('CUSTOM_MS_YAHEI_PACKAGE', '')
-        se_pkg = config.get('CUSTOM_SEGOE_PACKAGE', '')
-        if ms_pkg:
-            report_lines.append(f"  MSYH 字体包: {ms_pkg}")
-        if se_pkg:
-            report_lines.append(f"  Segoe UI 字体包: {se_pkg}")
+        if config.get('ENABLE_MS_YAHEI', True):
+            ms_pkg = config.get('CUSTOM_MS_YAHEI_PACKAGE', '')
+            if ms_pkg:
+                report_lines.append(f"  MSYH 字体包: {ms_pkg}")
+        if config.get('ENABLE_SEGOE_UI', True):
+            se_pkg = config.get('CUSTOM_SEGOE_PACKAGE', '')
+            if se_pkg:
+                report_lines.append(f"  Segoe UI 字体包: {se_pkg}")
     else:
         # Sarasa 版本
-        try:
-            from fetch_sarasa import get_version_and_assets
-            sarasa_version, _ = get_version_and_assets()
-            if sarasa_version:
-                report_lines.append(f"  Sarasa Gothic: {sarasa_version}")
-        except Exception as e:
-            report_lines.append(f"  Sarasa Gothic: 获取失败 ({e})")
+        if config.get('ENABLE_MS_YAHEI', True):
+            try:
+                from fetch_sarasa import get_version_and_assets
+                sarasa_version, _ = get_version_and_assets()
+                if sarasa_version:
+                    report_lines.append(f"  Sarasa Gothic: {sarasa_version}")
+            except Exception as e:
+                report_lines.append(f"  Sarasa Gothic: 获取失败 ({e})")
 
         # Inter 版本
-        try:
-            from fetch_inter import get_inter_version_and_assets
-            inter_version, _ = get_inter_version_and_assets()
-            if inter_version:
-                report_lines.append(f"  Inter: {inter_version}")
-        except Exception as e:
-            report_lines.append(f"  Inter: 获取失败 ({e})")
+        if config.get('ENABLE_SEGOE_UI', True):
+            try:
+                from fetch_inter import get_inter_version_and_assets
+                inter_version, _ = get_inter_version_and_assets(silent=True)
+                if inter_version:
+                    report_lines.append(f"  Inter: {inter_version}")
+            except Exception as e:
+                report_lines.append(f"  Inter: 获取失败 ({e})")
 
     # 主要配置参数说明
     report_lines.append("主要配置参数说明：")

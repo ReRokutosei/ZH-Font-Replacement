@@ -1,17 +1,22 @@
-import logging
 import json
+import logging
 import os
 import sys
+import traceback
 
 import yaml
 from fontTools.ttLib import TTCollection, TTFont
 
 from project_utils import find_font_file, safe_copy
 
+
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
     config = yaml.safe_load(f)
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 等宽映射表
 MSYH_MAPPING_MONOSPACED = [
@@ -193,18 +198,17 @@ def batch_generate_ttc(ttc_names=None):
         ttf_list = TTC_GROUPS[ttc_name]
         ttf_paths = [os.path.abspath(os.path.join(config['TEMP_DIR'], ttf)) for ttf in ttf_list]
         ttf_paths_exist = [p for p in ttf_paths if os.path.exists(p)]
+        
         if len(ttf_paths_exist) != 4:
-            
-            logging.warning(f"生成 {ttc_name} 时有缺失: {ttf_paths_exist}")
+            logging.warning(f"生成 {ttc_name} 时有缺失: {ttf_paths_exist}，应有: {ttf_paths}")
             continue
         ttc_path = os.path.abspath(os.path.join(config['TEMP_DIR'], ttc_name))
         try:
             generate_ttc_with_fonttools(ttf_paths_exist, ttc_path)
-            
             logging.info(f"生成 {ttc_name} 成功 (FontTools)")
         except Exception as e:
-            
             logging.error(f"生成 {ttc_name} 失败 (FontTools): {e}")
+            logging.error(traceback.format_exc())
 
 
 def check_ttc_generated():

@@ -37,8 +37,9 @@ def generate_segoe_ui(config, result_subdir):
             segoe_generate.copy_font_info(segoe_out, info)
     for segoe_name, _ in mapping:
         src = os.path.join(segoe_generate.DST_DIR, segoe_name)
+        dst = os.path.join(result_subdir, segoe_name)
         try:
-            safe_copy(src, result_subdir)
+            safe_copy(src, dst)
         except Exception:
-            pass
+            logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
     logging.info("Segoe UI字体处理完成")

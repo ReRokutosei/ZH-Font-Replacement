@@ -1,5 +1,4 @@
 import logging
-import os
 
 import fetch_sarasa as sarasa
 from msyh_workflow import generate_ms_yahei
@@ -46,7 +45,6 @@ def main():
                     raise
                 for url in urls:
                     path = sarasa.download(url, save_dir=get_config_value(config, 'SOURCE_FILES_DIR', './source_files'))
-                    logging.info(f"准备解压: {os.path.basename(path)}")
                     sarasa.unzip(path)
         # 生成唯一结果子目录
         result_subdir = get_new_result_dir(config)

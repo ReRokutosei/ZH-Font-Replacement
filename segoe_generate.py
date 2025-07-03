@@ -9,7 +9,6 @@ from project_utils import (find_font_file, get_config_value, load_config,
                            safe_copy)
 
 config = load_config()
-# REF_DIR = os.path.join(get_config_value(config, 'TEMP_DIR', './temp'), 'extras', 'ttf')  # 直接使用解压后的单独ttf目录
 DST_DIR = get_config_value(config, 'TEMP_DIR', './temp')
 FONT_INFO_DIR = './font_info'
 
