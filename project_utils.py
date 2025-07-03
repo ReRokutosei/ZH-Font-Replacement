@@ -48,11 +48,13 @@ def get_new_result_dir(config):
 
 def write_version_report(config, now_format, full):
     report_lines = []
+
+    # 生成时间
     report_lines.append(f"生成时间: {now_format}")
 
     # 源字体包版本信息
-    report_lines.append("")
-    report_lines.append("源字体包版本信息：")
+    report_lines.extend(["", "源字体包版本信息："])
+
     # Sarasa 版本
     try:
         from fetch_sarasa import get_version_and_assets
@@ -61,6 +63,7 @@ def write_version_report(config, now_format, full):
             report_lines.append(f"  Sarasa Gothic: {sarasa_version}")
     except Exception as e:
         report_lines.append(f"  Sarasa Gothic: 获取失败 ({e})")
+
     # Inter 版本
     try:
         from fetch_inter import get_inter_version_and_assets
@@ -70,10 +73,9 @@ def write_version_report(config, now_format, full):
     except Exception as e:
         report_lines.append(f"  Inter: 获取失败 ({e})")
 
-    report_path = os.path.join(full, "version_report.txt")
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(report_lines))    
+    # 主要配置参数说明
     report_lines.append("主要配置参数说明：")
+
     explain_map = {
         'ENABLE_MS_YAHEI': '生成微软雅黑字体',
         'ENABLE_SEGOE_UI': '生成Segoe UI字体',
@@ -86,9 +88,10 @@ def write_version_report(config, now_format, full):
         'SOURCE_FILES_DIR': '源文件存放目录',
         'CLEAN_TEMP_ON_SUCCESS': '清理临时目录',
     }
+
     for k, v in config.items():
         if k in explain_map:
-            if k == 'ENABLE_MS_YAHEI' or k == 'ENABLE_SEGOE_UI':
+            if k in ['ENABLE_MS_YAHEI', 'ENABLE_SEGOE_UI']:
                 v_str = '启用' if v else '禁用'
             elif k == 'SARASA_VERSION_STYLE':
                 v_str = 'hinted' if v == 'hinted' else 'unhinted'
@@ -102,7 +105,12 @@ def write_version_report(config, now_format, full):
                 v_str = '本地(local)' if v == 'local' else f'在线({v})'
             else:
                 v_str = str(v)
-            report_lines.append(f"  {explain_map[k]}：{v_str}")
+            report_lines.append(f"  {explain_map[k]}: {v_str}")
+
+    # 写入文件
+    report_path = os.path.join(full, "version_report.txt")
+    with open(report_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(report_lines))
 
 # 清理临时目录
 def clean_temp_dir(config):
