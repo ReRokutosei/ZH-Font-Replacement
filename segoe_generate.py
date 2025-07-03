@@ -6,6 +6,8 @@ import yaml
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
+from project_utils import find_font_file
+
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
     config = yaml.safe_load(f)
@@ -78,16 +80,18 @@ def batch_rename_and_patch():
         infos = json.load(f)
     info_map = {info['file'].lower(): info for info in infos}
     mapping = get_segoe_mapping()
+    temp_dir = config.get('TEMP_DIR', './temp')
     for segoe_name, inter_name in mapping:
-        inter_path = os.path.join(REF_DIR, inter_name)
-        segoe_out = os.path.join(DST_DIR, segoe_name)
-        if os.path.exists(inter_path):
+        try:
+            rel_inter_path = find_font_file(temp_dir, inter_name)
+            inter_path = os.path.join(temp_dir, rel_inter_path)
+            segoe_out = os.path.join(DST_DIR, segoe_name)
             shutil.copy(inter_path, segoe_out)
             info = info_map.get(segoe_name.lower())
             if info:
                 copy_font_info(segoe_out, info)
-        else:
-            print(f"[WARN] 找不到源字体: {inter_path}")
+        except Exception as e:
+            print(f"[WARN] 找不到源字体: {inter_name}，查找异常: {e}")
 
 
 if __name__ == '__main__':

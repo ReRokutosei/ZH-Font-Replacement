@@ -1,12 +1,13 @@
 import json
 import os
 import shutil as fs
-import subprocess
 import sys
 
 import yaml
 from fontTools.ttLib import TTCollection, TTFont, newTable
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
+
+from project_utils import find_font_file
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
@@ -143,13 +144,15 @@ def get_msyh_mapping():
 
 def batch_copy_msyh_ttf():
     mapping = get_msyh_mapping()
+    temp_dir = config['TEMP_DIR']
     for dst, src in mapping:
-        src_path = os.path.join(config['TEMP_DIR'], src)
-        dst_path = os.path.join(config['TEMP_DIR'], dst)
-        if os.path.exists(src_path):
+        try:
+            rel_src_path = find_font_file(temp_dir, src)
+            src_path = os.path.join(temp_dir, rel_src_path)
+            dst_path = os.path.join(temp_dir, dst)
             fs.copy(src_path, dst_path)
-        else:
-            print(f"[WARN] 源字体不存在: {src_path}")
+        except Exception as e:
+            print(f"[WARN] 源字体不存在: {src}，查找异常: {e}")
 
 def batch_patch_names():
     mapping = get_msyh_mapping()

@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 
+import project_utils
 import segoe_generate
 
 
@@ -10,15 +11,16 @@ def generate_segoe_ui(config, result_subdir):
     logging.info("开始处理Inter->Segoe UI流程")
     import fetch_inter as inter
     inter.fetch_inter()  # 下载并解压Inter
-    extras_ttf_dir = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')
+    temp_dir = config.get('TEMP_DIR', './temp')
     mapping = segoe_generate.get_segoe_mapping()
     for segoe_name, inter_name in mapping:
-        src = os.path.join(extras_ttf_dir, inter_name)
-        dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
-        if os.path.exists(src):
+        try:
+            rel_src_path = project_utils.find_font_file(temp_dir, inter_name)
+            src = os.path.join(temp_dir, rel_src_path)
+            dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
             shutil.copy(src, dst)
-        else:
-            logging.warning(f"未找到 Inter ttf: {src}")
+        except Exception as e:
+            logging.warning(f"未找到 Inter ttf: {inter_name}，查找异常: {e}")
     with open('./font_info/segoe_font_info.json', 'r', encoding='utf-8') as f:
         infos = json.load(f)
     info_map = {info['file'].lower(): info for info in infos}

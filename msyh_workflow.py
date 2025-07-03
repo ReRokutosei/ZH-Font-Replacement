@@ -1,9 +1,9 @@
 import logging
-import os
 import subprocess
 import sys
 
 import copy_result as copy
+import project_utils
 
 
 def run_with_python(script, *args):
@@ -14,7 +14,13 @@ def run_with_python(script, *args):
 def check_ttc_generated(config):
     temp_dir = config.get('TEMP_DIR', './temp')
     ttc_files = ["msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "msyhxl.ttc", "msyhsb.ttc"]
-    return all(os.path.exists(os.path.join(temp_dir, f)) for f in ttc_files)
+    # 用 find_font_file 检查每个文件是否存在
+    for f in ttc_files:
+        try:
+            project_utils.find_font_file(temp_dir, f)
+        except Exception:
+            return False
+    return True
 
 def generate_ms_yahei(config, result_subdir):
     logging.info("开始生成微软雅黑字体")

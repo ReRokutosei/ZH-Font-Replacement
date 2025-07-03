@@ -5,8 +5,8 @@ import shutil
 
 import yaml
 
-# 配置加载
 
+# 配置加载
 def load_config():
     config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
     with open(config_path, encoding='utf-8') as f:
@@ -16,22 +16,37 @@ def load_config():
     return config
 
 # 配置校验
-
 def validate_config(config):
     if not config.get('ENABLE_MS_YAHEI', True) and not config.get('ENABLE_SEGOE_UI', True):
         logging.error("错误：至少需要启用一项生成功能（微软雅黑/Segoe UI）")
         raise SystemExit(1)
 
 # 目录创建
-
 def create_directories(config):
     for d in [config.get('TEMP_DIR', './temp'), config.get('RESULT_DIR', './result'), config.get('SOURCE_FILES_DIR', './source_files')]:
         d = os.path.normpath(d)
         if not os.path.exists(d):
             os.makedirs(d)
 
-# 结果目录和报告
 
+# 通用字体文件查找
+def find_font_file(root_dir, target_name):
+    """
+    在 root_dir 下递归查找名为 target_name 的文件，返回相对路径（相对于 root_dir）。
+    若未找到则抛出 FileNotFoundError。
+    """
+    # 防御性：只允许普通文件名，防止特殊字符
+    if not isinstance(target_name, str) or any(c in target_name for c in r"/\\:*?\"<>|"):
+        raise ValueError(f"非法文件名: {target_name}")
+    for dirpath, _, filenames in os.walk(root_dir):
+        for fname in filenames:
+            if fname == target_name:
+                rel_path = os.path.relpath(os.path.join(dirpath, fname), root_dir)
+                return rel_path
+    raise FileNotFoundError(f"未在 {root_dir} 下找到目标文件: {target_name}")
+
+
+# 结果目录和报告
 def get_new_result_dir(config):
     now = datetime.datetime.now()
     now_dir = now.strftime('%Y%m%d%H%M')
