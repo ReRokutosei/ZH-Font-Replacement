@@ -8,6 +8,9 @@ import zipfile
 import requests as req
 import yaml
 
+from project_utils import (ensure_dir_exists, extract_archive,
+                           print_progress_bar)
+
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
     config = yaml.safe_load(f)
@@ -69,8 +72,7 @@ def download(url, save_dir=None):
     if save_dir is None:
         save_dir = SOURCE_FILES_DIR
     save_dir = os.path.normpath(save_dir)
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+    ensure_dir_exists(save_dir)
     filename = url.split('/')[-1]
     target_path = os.path.normpath(os.path.join(save_dir, filename))
     if os.path.exists(target_path):
@@ -86,14 +88,7 @@ def download(url, save_dir=None):
             if chunk:
                 f.write(chunk)
                 downloaded_size += len(chunk)
-                
-                # 进度输出
-                progress = downloaded_size / total_size if total_size > 0 else 0
-                duration = time.time() - start_time
-                speed = downloaded_size / duration if duration > 0 else 0
-                
-                sys.stdout.write(f'\r下载进度: {downloaded_size}/{total_size} 字节 ({progress:.2%}) | 速度: {speed/1024:.2f} KB/s')
-                sys.stdout.flush()
+                print_progress_bar(downloaded_size, total_size, prefix='下载进度', suffix=f'{downloaded_size}/{total_size} 字节', length=30)
     
     return target_path
 
@@ -102,10 +97,7 @@ def unzip_inter(path, out_dir=None):
         out_dir = TEMP_DIR
     out_dir = os.path.normpath(out_dir)
     logging.info(f"开始解压 {os.path.normpath(path)} 到 {out_dir}")
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    with zipfile.ZipFile(path, 'r') as zip_ref:
-        zip_ref.extractall(out_dir)
+    extract_archive(path, out_dir)
 
 def fetch_inter():
     local_zip = find_local_inter_zip()

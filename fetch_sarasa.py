@@ -8,6 +8,9 @@ import py7zr as sz
 import requests as req
 import yaml
 
+from project_utils import (ensure_dir_exists, extract_archive,
+                           print_progress_bar)
+
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:
     config = yaml.safe_load(f)
@@ -123,8 +126,7 @@ def get_all_latest():
 
 def download(url, save_dir):
     save_dir = os.path.normpath(save_dir)
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+    ensure_dir_exists(save_dir)
     filename = url.split('/')[-1]
     target_path = os.path.normpath(os.path.join(save_dir, filename))
 
@@ -161,12 +163,7 @@ def download(url, save_dir):
             if chunk:
                 f.write(chunk)
                 downloaded_size += len(chunk)
-                # 进度输出
-                progress = downloaded_size / total_size if total_size > 0 else 0
-                duration = time.time() - start_time
-                speed = downloaded_size / duration if duration > 0 else 0
-                sys.stdout.write(f'\r下载进度: {downloaded_size}/{total_size} 字节 ({progress:.2%}) | 速度: {speed/1024:.2f} KB/s')
-                sys.stdout.flush()
+                print_progress_bar(downloaded_size, total_size, prefix='下载进度', suffix=f'{downloaded_size}/{total_size} 字节', length=30)
     logging.info(f"\n下载完成: {filename}")
 
     # SHA-256校验
@@ -194,7 +191,4 @@ def download(url, save_dir):
 def unzip(path):
     out_dir = os.path.normpath(config.get('TEMP_DIR', './temp'))
     logging.info(f"开始解压 {os.path.normpath(path)} 到 {out_dir}")
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-    with sz.SevenZipFile(path, mode='r') as z:
-        z.extractall(path=out_dir)
+    extract_archive(path, out_dir)

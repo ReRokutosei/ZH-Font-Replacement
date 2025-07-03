@@ -6,7 +6,7 @@ import shutil
 import fetch_inter as inter
 import project_utils
 import segoe_generate
-from project_utils import extract_custom_font_packages
+from project_utils import extract_custom_font_packages, safe_copy
 
 
 def generate_segoe_ui(config, result_subdir):
@@ -24,7 +24,7 @@ def generate_segoe_ui(config, result_subdir):
             rel_src_path = project_utils.find_font_file(temp_dir, inter_name)
             src = os.path.join(temp_dir, rel_src_path)
             dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
-            shutil.copy(src, dst)
+            safe_copy(src, dst)
         except Exception as e:
             logging.warning(f"未找到 Inter ttf: {inter_name}，查找异常: {e}")
     with open('./font_info/segoe_font_info.json', 'r', encoding='utf-8') as f:
@@ -37,6 +37,8 @@ def generate_segoe_ui(config, result_subdir):
             segoe_generate.copy_font_info(segoe_out, info)
     for segoe_name, _ in mapping:
         src = os.path.join(segoe_generate.DST_DIR, segoe_name)
-        if os.path.exists(src):
-            shutil.copy(src, result_subdir)
+        try:
+            safe_copy(src, result_subdir)
+        except Exception:
+            pass
     logging.info("Segoe UI字体处理完成")

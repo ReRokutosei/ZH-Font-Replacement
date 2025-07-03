@@ -6,14 +6,9 @@ import yaml
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
-from project_utils import find_font_file
+from project_utils import find_font_file, load_config, safe_copy
 
-config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
-with open(config_path, encoding='utf-8') as f:
-    config = yaml.safe_load(f)
-
-if not isinstance(config, dict):
-    raise RuntimeError(f"config.yaml 解析异常，返回类型: {type(config)}, 内容: {config}")
+config = load_config()
 REF_DIR = os.path.join(config.get('TEMP_DIR', './temp'), 'extras', 'ttf')  # 直接使用解压后的单独ttf目录
 DST_DIR = config.get('TEMP_DIR', './temp')
 FONT_INFO_DIR = './font_info'
@@ -92,7 +87,7 @@ def batch_rename_and_patch():
             rel_inter_path = find_font_file(temp_dir, inter_name)
             inter_path = os.path.join(temp_dir, rel_inter_path)
             segoe_out = os.path.join(DST_DIR, segoe_name)
-            shutil.copy(inter_path, segoe_out)
+            safe_copy(inter_path, segoe_out)
             info = info_map.get(segoe_name.lower())
             if info:
                 copy_font_info(segoe_out, info)

@@ -1,10 +1,14 @@
 import logging
+import os
+import shutil
 import subprocess
 import sys
 
-import copy_result as copy
+import yaml
+
 import project_utils
 
+config = project_utils.load_config()
 
 def run_with_python(script, *args):
     result = subprocess.run([sys.executable, script] + list(args))
@@ -22,6 +26,19 @@ def check_ttc_generated(config):
             return False
     return True
 
+
+def copy_result(result_dir):
+    main_files = [
+        'msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc', 'msyhxl.ttc', 'msyhsb.ttc'
+    ]
+
+    for file in main_files:
+        src = os.path.join(config.get('TEMP_DIR', './temp'), file)
+        try:
+            project_utils.safe_copy(src, result_dir)
+        except Exception:
+            pass
+
 def generate_ms_yahei(config, result_subdir):
     logging.info("开始生成微软雅黑字体")
     run_with_python("msyh_generate.py", "gen_regular")
@@ -30,7 +47,7 @@ def generate_ms_yahei(config, result_subdir):
     run_with_python("msyh_generate.py", "gen_extralight")
     run_with_python("msyh_generate.py", "gen_semibold")
     if check_ttc_generated(config):
-        copy.copy_result(result_subdir)
+        copy_result(result_subdir)
         logging.info("微软雅黑字体生成完成，并已复制到结果目录")
     else:
         logging.error("微软雅黑字体未生成任何文件，请检查流程！")

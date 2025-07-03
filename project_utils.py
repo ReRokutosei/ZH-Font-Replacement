@@ -23,12 +23,69 @@ def validate_config(config):
         logging.error("错误：至少需要启用一项生成功能（微软雅黑/Segoe UI）")
         raise SystemExit(1)
 
+
+# 通用目录创建
+def ensure_dir_exists(path):
+    """
+    确保目录存在，不存在则创建。
+    """
+    path = os.path.normpath(path)
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 # 目录创建
 def create_directories(config):
     for d in [config.get('TEMP_DIR', './temp'), config.get('RESULT_DIR', './result'), config.get('SOURCE_FILES_DIR', './source_files')]:
-        d = os.path.normpath(d)
-        if not os.path.exists(d):
-            os.makedirs(d)
+        ensure_dir_exists(d)
+# 通用解压缩
+def extract_archive(archive_path, out_dir):
+    """
+    自动判断 zip/7z 并解压到 out_dir。
+    """
+    ext = os.path.splitext(archive_path)[1].lower()
+    ensure_dir_exists(out_dir)
+    if ext == '.zip':
+        with zipfile.ZipFile(archive_path, 'r') as zf:
+            zf.extractall(out_dir)
+    elif ext == '.7z':
+        with sz.SevenZipFile(archive_path, mode='r') as archive:
+            archive.extractall(path=out_dir)
+    else:
+        raise RuntimeError(f"仅支持 zip/7z 格式，错误文件: {archive_path}")
+
+# 通用安全拷贝
+def safe_copy(src, dst, overwrite=True):
+    """
+    拷贝文件，自动判断存在性，默认覆盖。
+    """
+    if not os.path.isfile(src):
+        raise FileNotFoundError(f"源文件不存在: {src}")
+    if os.path.exists(dst):
+        if not overwrite:
+            return
+        if os.path.isdir(dst):
+            raise IsADirectoryError(f"目标是目录: {dst}")
+    ensure_dir_exists(os.path.dirname(dst))
+    shutil.copy2(src, dst)
+
+# 通用进度条输出
+def print_progress_bar(current, total, prefix='', suffix='', length=40):
+    """
+    打印进度条到控制台。
+    """
+    percent = f"{100 * (current / float(total)):.1f}" if total else '0.0'
+    filled_length = int(length * current // total) if total else 0
+    bar = '█' * filled_length + '-' * (length - filled_length)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='')
+    if current >= total:
+        print()
+
+# 配置参数获取（带默认值）
+def get_config_value(config, key, default=None):
+    """
+    获取配置参数，若不存在则返回默认值。
+    """
+    return config[key] if key in config else default
 
 
 # 通用字体文件查找
