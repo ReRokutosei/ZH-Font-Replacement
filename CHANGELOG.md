@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/ReRokutosei/yahei-sarasa/compare/v2.1.0...v2.2.0) (2025-07-05)
+
+
+### Features
+
+* **otf2ttf:** 支持传入otf文件 ([b8863ce](https://github.com/ReRokutosei/yahei-sarasa/commit/b8863ce86374b758c45e343f7f4800070c7b0b72))
+* **project_util:** custom模式支持传入多个字体包 ([fd3f597](https://github.com/ReRokutosei/yahei-sarasa/commit/fd3f5970fc632f47ae8704abdb61b5b8d3ca99eb))
+
 ## [2.1.0](https://github.com/ReRokutosei/yahei-sarasa/compare/v2.0.0...v2.1.0) (2025-07-04)
 
 
