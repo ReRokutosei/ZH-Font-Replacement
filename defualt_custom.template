@@ -1,0 +1,38 @@
+msyh_mapping = [
+    ["msyh0.ttf",   "SarasaGothicSC-Regular.ttf"],
+    ["msyh1.ttf",   "SarasaUiSC-Regular.ttf"],
+    ["msyh2.ttf",   "SarasaUiSC-Italic.ttf"],
+    ["msyh3.ttf",   "SarasaGothicSC-Italic.ttf"],
+    ["msyhbd0.ttf", "SarasaUiSC-Bold.ttf"],
+    ["msyhbd1.ttf", "SarasaGothicSC-Bold.ttf"],
+    ["msyhbd2.ttf", "SarasaUiSC-BoldItalic.ttf"],
+    ["msyhbd3.ttf", "SarasaGothicSC-BoldItalic.ttf"],
+    ["msyhl0.ttf",  "SarasaUiSC-Light.ttf"],
+    ["msyhl1.ttf",  "SarasaGothicSC-Light.ttf"],
+    ["msyhl2.ttf",  "SarasaUiSC-LightItalic.ttf"],
+    ["msyhl3.ttf",  "SarasaGothicSC-LightItalic.ttf"],
+    ["msyhsb0.ttf", "SarasaUiSC-SemiBold.ttf"],
+    ["msyhsb1.ttf", "SarasaGothicSC-SemiBold.ttf"],
+    ["msyhsb2.ttf", "SarasaUiSC-SemiBoldItalic.ttf"],
+    ["msyhsb3.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"],
+    ["msyhxl0.ttf", "SarasaUiSC-ExtraLight.ttf"],
+    ["msyhxl1.ttf", "SarasaGothicSC-ExtraLight.ttf"],
+    ["msyhxl2.ttf", "SarasaUiSC-ExtraLightItalic.ttf"],
+    ["msyhxl3.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"],
+]
+
+
+segoe_mapping: [
+  ["segoeui.ttf",    "Inter-Regular.ttf"],
+  ["segoeuii.ttf",   "Inter-Italic.ttf"],
+  ["segoeuisl.ttf",  "Inter-Light.ttf"],
+  ["seguisli.ttf",   "Inter-LightItalic.ttf"],
+  ["segoeuil.ttf",   "Inter-Thin.ttf"],
+  ["seguili.ttf",    "Inter-ThinItalic.ttf"],
+  ["segoeuib.ttf",   "Inter-Bold.ttf"],
+  ["segoeuiz.ttf",   "Inter-BoldItalic.ttf"],
+  ["seguibl.ttf",    "Inter-Black.ttf"],
+  ["seguibli.ttf",   "Inter-BlackItalic.ttf"],
+  ["seguisb.ttf",    "Inter-SemiBold.ttf"],
+  ["seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"],
+]
