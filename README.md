@@ -23,7 +23,7 @@
   - [License](#license)
   - [免责声明](#免责声明)
   - [致谢](#致谢)
-  - [附FullName表](#附fullname表)
+  - [Full Name表](#full-name表)
 
 ---
 
@@ -259,21 +259,22 @@ Windows Registry Editor Version 5.00
 
 ---
 
-## 附FullName表
->附上msyh-Ver6.30、msyh-Ver11.3、segoeUI-Ver5.62
->的FullName(NameID=4, Lang=2052 or Lang=1032)的CSV表
->仅供参考
+## Full Name表
+>附上FullName(NameID=4, Lang=2052 or Lang=1032)的CSV表参考
 
 ```csv
+# msyh-Ver6.30
 File,Index,Full Names
 msyh.ttc,0,微软雅黑
 msyh.ttc,1,Microsoft Yahei UI
 msyhbd.ttc,0,微软雅黑 Bold
 msyhbd.ttc,1,Microsoft Yahei UI Bold
 msyhl.ttc,0,微软雅黑 Light
-msyhl.ttc,1,Microsoft YaHei UI Light```
+msyhl.ttc,1,Microsoft YaHei UI Light
+```
 
 ```csv
+# msyh-Ver11.3
 File,Index,Full Names
 msyh.ttc,0,Microsoft YaHei
 msyh.ttc,1,Microsoft YaHei UI
@@ -286,9 +287,11 @@ msyhl.ttc,1,Microsoft YaHei UI Light
 msyhsb.ttc,0,Microsoft YaHei Semibold
 msyhsb.ttc,1,Microsoft YaHei UI Semibold
 msyhsl.ttc,0,Microsoft YaHei Semilight
-msyhsl.ttc,1,Microsoft YaHei UI Semilight```
+msyhsl.ttc,1,Microsoft YaHei UI Semilight
+```
 
 ```csv
+# SegoeUI-Ver5.62
 File,Index,Full Names
 segoeui.ttf,0,Segoe UI
 segoeuib.ttf,0,Segoe UI Bold
@@ -301,4 +304,5 @@ seguibli.ttf,0,Segoe UI Black Italic
 seguili.ttf,0,Segoe UI Light Italic
 seguisb.ttf,0,Segoe UI Semibold
 seguisbi.ttf,0,Segoe UI Semibold Italic
-seguisli.ttf,0,Segoe UI Semilight Italic```
+seguisli.ttf,0,Segoe UI Semilight Italic
+```
