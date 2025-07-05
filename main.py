@@ -30,6 +30,15 @@ def main():
                 except Exception as e:
                     logging.error(f"自定义字体包解压失败: {e}")
                     raise
+
+                # 将 mapping 中的 otf 转为 ttf
+                from project_utils import update_mapping_otf_to_ttf
+                temp_dir = config.get('TEMP_DIR', './temp')
+                if 'msyh_mapping' in config:
+                    config['msyh_mapping'] = update_mapping_otf_to_ttf(config['msyh_mapping'], temp_dir, verbose=True)
+                if 'segoe_mapping' in config:
+                    config['segoe_mapping'] = update_mapping_otf_to_ttf(config['segoe_mapping'], temp_dir, verbose=True)
+
             elif download_mode == 'local':
                 packages = sarasa.find_all_local_packages()
                 if not packages:

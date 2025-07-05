@@ -2,6 +2,8 @@ import datetime
 import logging
 import os
 import shutil
+import subprocess
+import time
 import zipfile
 
 import py7zr as sz
@@ -103,6 +105,121 @@ def find_font_file(root_dir, target_name):
                 rel_path = os.path.relpath(os.path.join(dirpath, fname), root_dir)
                 return rel_path
     raise FileNotFoundError(f"未在 {root_dir} 下找到目标文件: {target_name}")
+
+
+# OTF 批量转 TTF（依赖 otf2ttf 命令行工具）
+def find_otf_files(root_dir):
+    """
+    递归查找 root_dir 下所有 .otf 文件，返回绝对路径列表。
+    """
+    otf_files = []
+    for dirpath, _, filenames in os.walk(root_dir):
+        for filename in filenames:
+            if filename.lower().endswith('.otf'):
+                otf_files.append(os.path.join(dirpath, filename))
+    return otf_files
+
+def convert_otf_to_ttf(otf_path, verbose=False):
+    """
+    调用 otf2ttf 工具将单个 OTF 文件转为 TTF。
+    返回 (success: bool, duration: float)
+    """
+    start = time.time()
+    try:
+        result = subprocess.run(
+            ['otf2ttf', otf_path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding='utf-8',
+            errors='replace'
+        )
+        if verbose:
+            if result.stdout:
+                logging.info(f"otf2ttf stdout: {result.stdout.strip()}")
+            if result.stderr:
+                logging.warning(f"otf2ttf stderr: {result.stderr.strip()}")
+        success = True
+    except subprocess.CalledProcessError as e:
+        if verbose:
+            logging.error(f"转换失败: {otf_path}\n错误信息: {e}\nstdout: {e.stdout}\nstderr: {e.stderr}")
+        success = False
+    end = time.time()
+    return success, end - start
+
+def batch_convert_otf_to_ttf(root_dir, verbose=True):
+    """
+    批量转换 root_dir 下所有 OTF 文件为 TTF。
+    返回转换成功的 TTF 文件路径列表。
+    """
+    otf_files = find_otf_files(root_dir)
+    total = len(otf_files)
+    if verbose:
+        logging.info(f"共找到 {total} 个 OTF 文件，开始转换...")
+    ttf_files = []
+    global_start = time.time()
+    for idx, otf_file in enumerate(otf_files, 1):
+        if verbose:
+            logging.info(f"[{idx}/{total}] 正在转换: {otf_file}")
+        success, duration = convert_otf_to_ttf(otf_file, verbose=verbose)
+        ttf_path = os.path.splitext(otf_file)[0] + '.ttf'
+        if success and os.path.exists(ttf_path):
+            ttf_files.append(ttf_path)
+            if verbose:
+                logging.info(f"    转换完成，用时 {duration:.2f} 秒")
+        else:
+            if verbose:
+                logging.error(f"    转换失败，用时 {duration:.2f} 秒")
+    global_end = time.time()
+    if verbose:
+        logging.info(f"全部转换完成，总用时 {global_end - global_start:.2f} 秒")
+    return ttf_files
+
+
+def update_mapping_otf_to_ttf(mapping, temp_dir, verbose=True):
+    """
+    检查 mapping 中的 .otf 文件，自动批量转为 .ttf，并返回新 mapping（全部为 ttf 文件名）。
+    mapping: list 或 dict，元素为 (dst, src) 或 {dst: src}
+    temp_dir: 解压后字体所在目录
+    """
+    # 统一为 list[(dst, src)]
+    if isinstance(mapping, dict):
+        items = list(mapping.items())
+    else:
+        items = list(mapping)
+
+    # 收集所有需要转换的 otf 文件名，去重
+    otf_set = set()
+    otf_path_map = dict()
+    for _, src in items:
+        if src.lower().endswith('.otf'):
+            try:
+                rel_path = find_font_file(temp_dir, src)
+                otf_path = os.path.join(temp_dir, rel_path)
+                otf_set.add(otf_path)
+                otf_path_map[src] = otf_path
+            except Exception:
+                msg = f"未找到 OTF 文件: {src} (在 {temp_dir} 及其子目录)"
+                if verbose:
+                    logging.error(msg)
+                raise RuntimeError(msg)
+    # 只对 mapping 里实际找到的 otf 文件做转换
+    for otf_path in otf_set:
+        try:
+            convert_otf_to_ttf(otf_path, verbose=verbose)
+        except Exception as e:
+            msg = f"OTF 转 TTF 失败: {otf_path}, 错误: {e}"
+            if verbose:
+                logging.error(msg)
+            raise RuntimeError(msg)
+    new_mapping = []
+    for dst, src in items:
+        if src.lower().endswith('.otf'):
+            ttf_src = os.path.splitext(src)[0] + '.ttf'
+            new_mapping.append((dst, ttf_src))
+        else:
+            new_mapping.append((dst, src))
+    return new_mapping
 
 
 # 结果目录和报告

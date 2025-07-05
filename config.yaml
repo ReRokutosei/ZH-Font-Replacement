@@ -15,7 +15,7 @@ RESULT_DIR: ./result          # 结果输出目录
 SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
 
 # 下载设置
-FONT_PACKAGE_SOURCE: online   # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
+FONT_PACKAGE_SOURCE: custom   # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
 DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
 
 # 其他选项
@@ -23,37 +23,53 @@ CLEAN_TEMP_ON_SUCCESS: true   # 主流程完成后是否自动清理 temp 目录
 
 
 # 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
-# CUSTOM_MS_YAHEI_PACKAGE: 指定自定义中文字体包（zip/7z），需放在字体源文件目录
-# CUSTOM_SEGOE_PACKAGE: 指定自定义英文字体包（zip/7z），需放在字体源文件目录
-CUSTOM_MS_YAHEI_PACKAGE: # 例：'SarasaGothicSC-TTF-1.0.31.7z'
-CUSTOM_SEGOE_PACKAGE: # 例：'Inter-4.1.zip'
+# 可为字符串（单个包）或列表（多个包），每个包需放在字体源文件目录
+# CUSTOM_MS_YAHEI_PACKAGE: 指定自定义中文字体包（zip/7z），如有多个请用列表
+# CUSTOM_SEGOE_PACKAGE: 指定自定义英文字体包（zip/7z），如有多个请用列表
+# 示例：
+
+# CUSTOM_MS_YAHEI_PACKAGE: 'SarasaGothicSC-TTF-1.0.31.7z'
+# 或
+# CUSTOM_MS_YAHEI_PACKAGE:
+#   - 'SarasaGothicSC-TTF-1.0.31.7z'
+#   - 'SarasaUiSC-TTF-1.0.31.7z'
+
+# CUSTOM_SEGOE_PACKAGE: 'Inter-4.1.zip'
+# 或
+# CUSTOM_SEGOE_PACKAGE:
+#   - 'Inter-4.1.zip'
+#   - 'InterDisplay-4.1.zip'
+CUSTOM_MS_YAHEI_PACKAGE: 
+CUSTOM_SEGOE_PACKAGE: 
 
 
 # 自定义字体映射（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
 # msyh_mapping: 生成微软雅黑时使用的自定义中文字体文件映射（key为微软雅黑指定的ttf名，value为源ttf文件名）
 # segoe_mapping: 生成Segoe UI时使用的自定义英文字体文件映射（key为segoe指定的ttf名，value为源ttf文件名）
-msyh_mapping: [
+
+msyh_mapping : [
   ["msyh0.ttf",   "SarasaGothicSC-Regular.ttf"],
-  ["msyh1.ttf",   "SarasaGothicSC-Regular.ttf"],
-  ["msyh2.ttf",   "SarasaGothicSC-Italic.ttf"],
+  ["msyh1.ttf",   "SarasaUiSC-Regular.ttf"],
+  ["msyh2.ttf",   "SarasaUiSC-Italic.ttf"],
   ["msyh3.ttf",   "SarasaGothicSC-Italic.ttf"],
-  ["msyhbd0.ttf", "SarasaGothicSC-Bold.ttf"],
+  ["msyhbd0.ttf", "SarasaUiSC-Bold.ttf"],
   ["msyhbd1.ttf", "SarasaGothicSC-Bold.ttf"],
-  ["msyhbd2.ttf", "SarasaGothicSC-BoldItalic.ttf"],
+  ["msyhbd2.ttf", "SarasaUiSC-BoldItalic.ttf"],
   ["msyhbd3.ttf", "SarasaGothicSC-BoldItalic.ttf"],
-  ["msyhl0.ttf",  "SarasaGothicSC-Light.ttf"],
+  ["msyhl0.ttf",  "SarasaUiSC-Light.ttf"],
   ["msyhl1.ttf",  "SarasaGothicSC-Light.ttf"],
-  ["msyhl2.ttf",  "SarasaGothicSC-LightItalic.ttf"],
+  ["msyhl2.ttf",  "SarasaUiSC-LightItalic.ttf"],
   ["msyhl3.ttf",  "SarasaGothicSC-LightItalic.ttf"],
-  ["msyhsb0.ttf", "SarasaGothicSC-SemiBold.ttf"],
+  ["msyhsb0.ttf", "SarasaUiSC-SemiBold.ttf"],
   ["msyhsb1.ttf", "SarasaGothicSC-SemiBold.ttf"],
-  ["msyhsb2.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"],
+  ["msyhsb2.ttf", "SarasaUiSC-SemiBoldItalic.ttf"],
   ["msyhsb3.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"],
-  ["msyhxl0.ttf", "SarasaGothicSC-ExtraLight.ttf"],
+  ["msyhxl0.ttf", "SarasaUiSC-ExtraLight.ttf"],
   ["msyhxl1.ttf", "SarasaGothicSC-ExtraLight.ttf"],
-  ["msyhxl2.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"],
-  ["msyhxl3.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"],
+  ["msyhxl2.ttf", "SarasaUiSC-ExtraLightItalic.ttf"],
+  ["msyhxl3.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"]
 ]
+
 
 segoe_mapping: [
   ["segoeui.ttf",    "Inter-Regular.ttf"],
@@ -67,5 +83,5 @@ segoe_mapping: [
   ["seguibl.ttf",    "Inter-Black.ttf"],
   ["seguibli.ttf",   "Inter-BlackItalic.ttf"],
   ["seguisb.ttf",    "Inter-SemiBold.ttf"],
-  ["seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"],
+  ["seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"]
 ]
