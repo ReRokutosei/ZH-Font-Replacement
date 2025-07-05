@@ -120,7 +120,7 @@ graph TD
 ## 依赖安装
 
 ```shell
-pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
+pip install fonttools==4.58.4 otf2ttf py7zr==1.0.0 requests==2.32.4 pyyaml
 ```
 
 ---
@@ -175,7 +175,7 @@ SEGOE_UI_SPACING_STYLE: compact
 
 - **在线下载**：在yaml设置 `FONT_PACKAGE_SOURCE: online` 后，将自动下载最新字体包；若本地已有最新版本则跳过
 
-- **自定义字体包**：通过 `FONT_PACKAGE_SOURCE: custom` 设置后，可以使用任意字体包，并指定自定义映射规则。
+- **自定义字体包**：通过 `FONT_PACKAGE_SOURCE: custom` 设置后，可以使用任意字体包，并指定[自定义映射规则](defualt_custom.template)。
 
 ---
 
@@ -254,6 +254,7 @@ Windows Registry Editor Version 5.00
 - [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic) 及其作者 Be5invis
 - [Inter](https://github.com/rsms/inter) 及其作者 Rasmus Andersson
 - [fontTools](https://github.com/fonttools/fonttools) 及相关开源社区
+- [otf2ttf](https://github.com/awesometoolbox/otf2ttf) 及其作者 Hexazero
 - 以及所有为字体自由与开源生态做出贡献的开发者
 
 ---
