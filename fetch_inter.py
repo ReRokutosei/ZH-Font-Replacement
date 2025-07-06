@@ -6,22 +6,23 @@ import time
 import requests as req
 import yaml
 
-from utils.file_ops import ensure_dir_exists
 from utils.archive import extract_archive
 from utils.config import get_config_value, load_config
+from utils.file_ops import ensure_dir_exists
 from utils.progress import print_progress_bar
 
-config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
-with open(config_path, encoding='utf-8') as f:
+config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+with open(config_path, encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
-SOURCE_FILES_DIR = config.get('SOURCE_FILES_DIR', './source_files')
-TEMP_DIR = config.get('TEMP_DIR', './temp')
+SOURCE_FILES_DIR = config.get("SOURCE_FILES_DIR", "./source_files")
+TEMP_DIR = config.get("TEMP_DIR", "./temp")
 
-INTER_API_URL = 'https://api.github.com/repos/rsms/inter/releases/latest'
+INTER_API_URL = "https://api.github.com/repos/rsms/inter/releases/latest"
 
 # 全局缓存
 _inter_version_cache = None
+
 
 def get_inter_version_and_assets(silent=False):
     """在线获取 Inter 最新版本信息
@@ -31,10 +32,10 @@ def get_inter_version_and_assets(silent=False):
     if _inter_version_cache is not None:
         return _inter_version_cache
     try:
-        response = req.get(INTER_API_URL, timeout=config.get('DOWNLOAD_TIMEOUT', 10))
+        response = req.get(INTER_API_URL, timeout=config.get("DOWNLOAD_TIMEOUT", 10))
         details = response.json()
-        version = details.get('tag_name')
-        assets = details.get('assets', [])
+        version = details.get("tag_name")
+        assets = details.get("assets", [])
         if not silent:
             logging.info(f"获取 Inter 在线版本信息成功: {version}")
         _inter_version_cache = (version, assets)
@@ -44,51 +45,61 @@ def get_inter_version_and_assets(silent=False):
         _inter_version_cache = (None, [])
         return None, []
 
+
 def find_local_inter_zip():
     dir_ = os.path.normpath(SOURCE_FILES_DIR)
     if not os.path.exists(dir_):
         return None
     files = os.listdir(dir_)
-    zips = [f for f in files if f.startswith('Inter-') and f.endswith('.zip')]
+    zips = [f for f in files if f.startswith("Inter-") and f.endswith(".zip")]
     if not zips:
         return None
     zips.sort(reverse=True)
     return os.path.normpath(os.path.join(dir_, zips[0]))
 
+
 def get_latest_inter_zip_url():
     try:
         version, assets = get_inter_version_and_assets()
         for asset in assets:
-            name = asset.get('name', '')
-            if name.startswith('Inter-') and name.endswith('.zip'):
-                return asset.get('browser_download_url')
+            name = asset.get("name", "")
+            if name.startswith("Inter-") and name.endswith(".zip"):
+                return asset.get("browser_download_url")
     except Exception as e:
         logging.error(f"获取 Inter Releases 失败: {str(e)}")
     return None
+
 
 def download(url, save_dir=None):
     if save_dir is None:
         save_dir = SOURCE_FILES_DIR
     save_dir = os.path.normpath(save_dir)
     ensure_dir_exists(save_dir)
-    filename = url.split('/')[-1]
+    filename = url.split("/")[-1]
     target_path = os.path.normpath(os.path.join(save_dir, filename))
     if os.path.exists(target_path):
         return target_path
-    
-    resp = req.get(url, timeout=config.get('DOWNLOAD_TIMEOUT', 10), stream=True)
-    total_size = int(resp.headers.get('content-length', 0))
+
+    resp = req.get(url, timeout=config.get("DOWNLOAD_TIMEOUT", 10), stream=True)
+    total_size = int(resp.headers.get("content-length", 0))
     downloaded_size = 0
     start_time = time.time()
-    
-    with open(target_path, 'wb') as f:
+
+    with open(target_path, "wb") as f:
         for chunk in resp.iter_content(chunk_size=8192):
             if chunk:
                 f.write(chunk)
                 downloaded_size += len(chunk)
-                print_progress_bar(downloaded_size, total_size, prefix='下载进度', suffix=f'{downloaded_size}/{total_size} 字节', length=30)
-    
+                print_progress_bar(
+                    downloaded_size,
+                    total_size,
+                    prefix="下载进度",
+                    suffix=f"{downloaded_size}/{total_size} 字节",
+                    length=30,
+                )
+
     return target_path
+
 
 def unzip_inter(path, out_dir=None):
     if out_dir is None:
@@ -96,6 +107,7 @@ def unzip_inter(path, out_dir=None):
     out_dir = os.path.normpath(out_dir)
     logging.info(f"开始解压 {os.path.normpath(path)} 到 {out_dir}")
     extract_archive(path, out_dir)
+
 
 def fetch_inter():
     local_zip = find_local_inter_zip()
@@ -111,5 +123,6 @@ def fetch_inter():
     unzip_inter(zip_path)
     return zip_path
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     fetch_inter()

@@ -10,7 +10,7 @@ import shutil
 
 def clean_temp_dir(config):
     """清理临时目录"""
-    temp_dir = os.path.normpath(config.get('TEMP_DIR', './temp'))
+    temp_dir = os.path.normpath(config.get("TEMP_DIR", "./temp"))
     for filename in os.listdir(temp_dir):
         file_path = os.path.normpath(os.path.join(temp_dir, filename))
         try:
@@ -20,4 +20,4 @@ def clean_temp_dir(config):
                 shutil.rmtree(file_path)
         except Exception as e:
             logging.warning(f"清理 temp 文件失败: {file_path}，原因: {e}")
-    logging.info("已清理 temp 目录下所有文件。") 
+    logging.info("已清理 temp 目录下所有文件。")

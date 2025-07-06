@@ -1,11 +1,18 @@
 import logging
 
-from msyh_generate import batch_copy_msyh_ttf, batch_patch_names, batch_generate_ttc, copy_individual_ttf_to_result, check_ttc_generated, copy_result_files
+from msyh_generate import (
+    batch_copy_msyh_ttf,
+    batch_generate_ttc,
+    batch_patch_names,
+    check_ttc_generated,
+    copy_individual_ttf_to_result,
+    copy_result_files,
+)
 
 
 def generate_ms_yahei(config, result_subdir):
     logging.info("开始生成微软雅黑字体")
-    
+
     # 一次性生成所有TTC文件，而不是分别调用
     # 先复制源TTF文件
     batch_copy_msyh_ttf()
@@ -13,7 +20,7 @@ def generate_ms_yahei(config, result_subdir):
     batch_patch_names()
     # 生成TTC文件
     batch_generate_ttc()
-    
+
     if check_ttc_generated():
         # 复制TTC文件到结果目录
         copy_result_files(result_subdir)
