@@ -160,22 +160,46 @@ def get_msyh_mapping():
 def batch_copy_msyh_ttf():
     mapping = get_msyh_mapping()
     temp_dir = config['TEMP_DIR']
+    logging.info(f"开始复制源TTF文件，共 {len(mapping)} 个文件")
+    
+    copied_count = 0
+    failed_count = 0
+    
     for dst, src in mapping:
         try:
             rel_src_path = find_font_file(temp_dir, src)
             src_path = os.path.join(temp_dir, rel_src_path)
             dst_path = os.path.join(temp_dir, dst)
             safe_copy(src_path, dst_path)
+            copied_count += 1
+            logging.debug(f"复制成功: {src} -> {dst}")
         except Exception as e:
-            
+            failed_count += 1
             logging.warning(f"源字体不存在: {src}，查找异常: {e}")
+    
+    logging.info(f"TTF文件复制完成 - 成功: {copied_count}, 失败: {failed_count}")
+    
+    if failed_count > 0:
+        logging.warning(f"有 {failed_count} 个源TTF文件复制失败")
 
 def batch_patch_names():
     mapping = get_msyh_mapping()
+    logging.info(f"开始设置字体名称，共 {len(mapping)} 个文件")
+    
+    processed_count = 0
+    skipped_count = 0
+    
     for dst, _ in mapping:
         dst_path = os.path.join(config['TEMP_DIR'], dst)
         if os.path.exists(dst_path):
             set_names_with_json(dst_path, dst)
+            processed_count += 1
+            logging.debug(f"设置名称成功: {dst}")
+        else:
+            skipped_count += 1
+            logging.debug(f"跳过设置名称: {dst} (文件不存在)")
+    
+    logging.info(f"字体名称设置完成 - 处理: {processed_count}, 跳过: {skipped_count}")
 
 
 def generate_ttc_with_fonttools(ttf_list, ttc_path):
@@ -251,10 +275,10 @@ def batch_generate_ttc(ttc_names=None, use_parallel=None, max_workers=None):
             # 对于5个TTC文件，使用3-4个工作线程比较合适
             max_workers = min(4, len(ttc_tasks))
         
-        logging.info(f"使用并行处理生成 {len(ttc_tasks)} 个 TTC 文件，工作线程数: {max_workers}")
+        logging.info(f"使用并行处理生成 [{len(ttc_tasks)}/{len(TTC_GROUPS)}] 个 TTC 文件，工作线程数: {max_workers}")
         _batch_generate_ttc_parallel(ttc_tasks, max_workers)
     else:
-        logging.info(f"使用串行处理生成 {len(ttc_tasks)} 个 TTC 文件")
+        logging.info(f"使用串行处理生成 [{len(ttc_tasks)}/{len(TTC_GROUPS)}] 个 TTC 文件")
         _batch_generate_ttc_serial(ttc_tasks)
 
 
@@ -294,15 +318,13 @@ def _batch_generate_ttc_parallel(ttc_tasks, max_workers):
             ttc_name, success, duration, error_msg = future.result()
             
             if success:
-                logging.info(f"生成 {ttc_name} 成功 (FontTools) - 耗时: {duration:.2f}秒")
                 completed_count += 1
             else:
-                logging.error(f"生成 {ttc_name} 失败 (FontTools) - 耗时: {duration:.2f}秒")
-                logging.error(f"错误详情: {error_msg}")
+                logging.error(f"生成 {ttc_name} 失败: {error_msg}")
                 failed_count += 1
     
     total_duration = time.time() - total_start
-    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}, 总耗时: {total_duration:.2f}秒")
+    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}")
 
 
 def _batch_generate_ttc_serial(ttc_tasks):
@@ -314,20 +336,15 @@ def _batch_generate_ttc_serial(ttc_tasks):
     failed_count = 0
     
     for ttc_name, ttf_paths, ttc_path in ttc_tasks:
-        start_time = time.time()
         try:
             generate_ttc_with_fonttools(ttf_paths, ttc_path)
-            duration = time.time() - start_time
-            logging.info(f"生成 {ttc_name} 成功 (FontTools) - 耗时: {duration:.2f}秒")
             completed_count += 1
         except Exception as e:
-            duration = time.time() - start_time
-            logging.error(f"生成 {ttc_name} 失败 (FontTools) - 耗时: {duration:.2f}秒: {e}")
-            logging.error(traceback.format_exc())
+            logging.error(f"生成 {ttc_name} 失败: {e}")
             failed_count += 1
     
     total_duration = time.time() - total_start
-    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}, 总耗时: {total_duration:.2f}秒")
+    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}")
 
 
 def copy_individual_ttf_to_result(result_dir):

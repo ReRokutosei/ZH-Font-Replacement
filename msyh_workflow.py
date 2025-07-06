@@ -40,14 +40,20 @@ def copy_result(result_dir):
 
 def generate_ms_yahei(config, result_subdir):
     logging.info("开始生成微软雅黑字体")
-    run_with_python("msyh_generate.py", "gen_regular")
-    run_with_python("msyh_generate.py", "gen_bold")
-    run_with_python("msyh_generate.py", "gen_light")
-    run_with_python("msyh_generate.py", "gen_extralight")
-    run_with_python("msyh_generate.py", "gen_semibold")
+    
+    # 一次性生成所有TTC文件，而不是分别调用
+    from msyh_generate import batch_copy_msyh_ttf, batch_patch_names, batch_generate_ttc
+    
+    # 先复制源TTF文件
+    batch_copy_msyh_ttf()
+    # 设置字体名称
+    batch_patch_names()
+    # 生成TTC文件
+    batch_generate_ttc()
+    
     if check_ttc_generated(config):
         copy_result(result_subdir)
-        # 复制单独的TTF文件（如果配置启用）
+        # 复制20个覆写元信息的TTF文件（如果配置启用）
         from msyh_generate import copy_individual_ttf_to_result
         copy_individual_ttf_to_result(result_subdir)
         logging.info("微软雅黑字体生成完成，并已复制到结果目录")
