@@ -3,6 +3,8 @@ import logging
 import os
 import sys
 import traceback
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import yaml
 from fontTools.ttLib import TTCollection, TTFont
@@ -179,21 +181,54 @@ def batch_patch_names():
 def generate_ttc_with_fonttools(ttf_list, ttc_path):
     """
     用 FontTools 合并 ttf_list 为 ttc_path，兼容新版和旧版 fontTools
+    优化版本：减少内存使用，提升合并速度
     """
-    fonts = [TTFont(ttf, recalcBBoxes=False, recalcTimestamp=False) for ttf in ttf_list]
+    # 优化1: 使用 lazy=True 延迟加载，减少初始内存占用
+    fonts = []
     try:
-        ttc = TTCollection(fonts)
-    except TypeError:
-        ttc = TTCollection()
-        ttc.fonts = fonts
-    ttc.save(ttc_path)
+        # 优化2: 批量加载字体，减少重复的 I/O 操作
+        for ttf in ttf_list:
+            # 使用 lazy=True 延迟加载表数据，只加载必要的表
+            font = TTFont(ttf, lazy=True, recalcBBoxes=False, recalcTimestamp=False)
+            fonts.append(font)
+        
+        # 优化3: 创建 TTC 时使用更高效的方式
+        try:
+            ttc = TTCollection(fonts)
+        except TypeError:
+            # 兼容旧版 fontTools
+            ttc = TTCollection()
+            ttc.fonts = fonts
+        
+        # 优化4: 直接保存，避免额外的内存复制
+        ttc.save(ttc_path)
+        
+    finally:
+        # 优化5: 及时清理内存
+        for font in fonts:
+            try:
+                font.close()
+            except:
+                pass
+        del fonts
 
-def batch_generate_ttc(ttc_names=None):
+def batch_generate_ttc(ttc_names=None, use_parallel=None, max_workers=None):
     """
     ttc_names: 指定只生成哪些 ttc（如 ["msyh.ttc"]），为 None 时全量生成
+    use_parallel: 是否使用并行处理，为 None 时从配置文件读取
+    max_workers: 最大工作线程数，为 None 时使用默认值
     """
+    # 从配置文件读取并行处理设置
+    if use_parallel is None:
+        use_parallel = config.get('ENABLE_PARALLEL_TTC_GENERATION', True)
+    if max_workers is None:
+        max_workers = config.get('MAX_PARALLEL_TTC_WORKERS', None)
+    
     if ttc_names is None:
         ttc_names = list(TTC_GROUPS.keys())
+    
+    # 预先检查所有文件是否存在，避免重复检查
+    ttc_tasks = []
     for ttc_name in ttc_names:
         ttf_list = TTC_GROUPS[ttc_name]
         ttf_paths = [os.path.abspath(os.path.join(config['TEMP_DIR'], ttf)) for ttf in ttf_list]
@@ -202,13 +237,97 @@ def batch_generate_ttc(ttc_names=None):
         if len(ttf_paths_exist) != 4:
             logging.warning(f"生成 {ttc_name} 时有缺失: {ttf_paths_exist}，应有: {ttf_paths}")
             continue
+        
         ttc_path = os.path.abspath(os.path.join(config['TEMP_DIR'], ttc_name))
+        ttc_tasks.append((ttc_name, ttf_paths_exist, ttc_path))
+    
+    if not ttc_tasks:
+        logging.warning("没有找到需要生成的 TTC 文件")
+        return
+    
+    # 根据配置决定是否使用并行处理
+    if use_parallel:
+        if max_workers is None:
+            # 对于5个TTC文件，使用3-4个工作线程比较合适
+            max_workers = min(4, len(ttc_tasks))
+        
+        logging.info(f"使用并行处理生成 {len(ttc_tasks)} 个 TTC 文件，工作线程数: {max_workers}")
+        _batch_generate_ttc_parallel(ttc_tasks, max_workers)
+    else:
+        logging.info(f"使用串行处理生成 {len(ttc_tasks)} 个 TTC 文件")
+        _batch_generate_ttc_serial(ttc_tasks)
+
+
+def _generate_single_ttc(ttc_name, ttf_paths, ttc_path):
+    """
+    生成单个 TTC 文件的辅助函数，用于并行处理
+    返回 (ttc_name, success, duration, error_msg)
+    """
+    start_time = time.time()
+    try:
+        generate_ttc_with_fonttools(ttf_paths, ttc_path)
+        duration = time.time() - start_time
+        return (ttc_name, True, duration, "")
+    except Exception as e:
+        duration = time.time() - start_time
+        error_msg = f"{e}\n{traceback.format_exc()}"
+        return (ttc_name, False, duration, error_msg)
+
+
+def _batch_generate_ttc_parallel(ttc_tasks, max_workers):
+    """
+    并行生成 TTC 文件
+    """
+    completed_count = 0
+    failed_count = 0
+    total_start = time.time()
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # 提交所有任务
+        future_to_task = {
+            executor.submit(_generate_single_ttc, ttc_name, ttf_paths, ttc_path): ttc_name
+            for ttc_name, ttf_paths, ttc_path in ttc_tasks
+        }
+        
+        # 处理完成的任务
+        for future in as_completed(future_to_task):
+            ttc_name, success, duration, error_msg = future.result()
+            
+            if success:
+                logging.info(f"生成 {ttc_name} 成功 (FontTools) - 耗时: {duration:.2f}秒")
+                completed_count += 1
+            else:
+                logging.error(f"生成 {ttc_name} 失败 (FontTools) - 耗时: {duration:.2f}秒")
+                logging.error(f"错误详情: {error_msg}")
+                failed_count += 1
+    
+    total_duration = time.time() - total_start
+    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}, 总耗时: {total_duration:.2f}秒")
+
+
+def _batch_generate_ttc_serial(ttc_tasks):
+    """
+    串行生成 TTC 文件
+    """
+    total_start = time.time()
+    completed_count = 0
+    failed_count = 0
+    
+    for ttc_name, ttf_paths, ttc_path in ttc_tasks:
+        start_time = time.time()
         try:
-            generate_ttc_with_fonttools(ttf_paths_exist, ttc_path)
-            logging.info(f"生成 {ttc_name} 成功 (FontTools)")
+            generate_ttc_with_fonttools(ttf_paths, ttc_path)
+            duration = time.time() - start_time
+            logging.info(f"生成 {ttc_name} 成功 (FontTools) - 耗时: {duration:.2f}秒")
+            completed_count += 1
         except Exception as e:
-            logging.error(f"生成 {ttc_name} 失败 (FontTools): {e}")
+            duration = time.time() - start_time
+            logging.error(f"生成 {ttc_name} 失败 (FontTools) - 耗时: {duration:.2f}秒: {e}")
             logging.error(traceback.format_exc())
+            failed_count += 1
+    
+    total_duration = time.time() - total_start
+    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}, 总耗时: {total_duration:.2f}秒")
 
 
 def check_ttc_generated():

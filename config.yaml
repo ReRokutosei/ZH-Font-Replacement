@@ -19,13 +19,17 @@ FONT_PACKAGE_SOURCE: custom   # online: 自动下载，local: 仅使用本地包
 DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
 
 # 其他选项
-CLEAN_TEMP_ON_SUCCESS: true   # 主流程完成后是否自动清理 temp 目录（true/false）
+CLEAN_TEMP_ON_SUCCESS: false   # 主流程完成后是否自动清理 temp 目录（true/false）
 
-# 并行处理设置
-ENABLE_PARALLEL_OTF_CONVERSION: true  # 是否启用并行OTF转TTF转换
+# OTF转TTF并行处理设置
+ENABLE_PARALLEL_OTF_CONVERSION: true  # 是否启用并行OTF转TTF
 MAX_PARALLEL_WORKERS: null            # 最大并行工作进程数，null表示自动使用CPU核心数
 ENABLE_FONT_GROUPING: true            # 是否启用字体分组处理
 ENABLE_MEMORY_OPTIMIZATION: true      # 是否启用内存优化
+
+# 并行TTC生成处理设置
+ENABLE_PARALLEL_TTC_GENERATION: true  # 是否启用并行TTC生成（推荐开启，可显著提升5个TTC文件的生成速度）
+MAX_PARALLEL_TTC_WORKERS: 4           # 最大TTC生成工作线程数，建议设置为3-4（适合5个TTC文件）
 
 
 # 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
