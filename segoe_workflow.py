@@ -1,45 +1,25 @@
-import json
 import logging
-import os
 
 import fetch_inter as inter
-import project_utils
 import segoe_generate
-from project_utils import (extract_custom_font_packages, get_config_value,
-                           safe_copy)
+from utils.config import get_config_value
+from utils.archive import extract_custom_font_packages
 
 
 def generate_segoe_ui(config, result_subdir):
     logging.info("开始处理Inter->Segoe UI流程")
-    temp_dir = get_config_value(config, 'TEMP_DIR', './temp')
-    mapping = segoe_generate.get_segoe_mapping()
+    
     # custom 模式下直接用 config.yaml 指定的自定义英文字体包
     if get_config_value(config, 'FONT_PACKAGE_SOURCE', 'local') == 'custom':
         # 若 temp 目录下未解压则主动解压一次
         extract_custom_font_packages(config)
     else:
         inter.fetch_inter()  # 下载并解压Inter
-    for segoe_name, inter_name in mapping:
-        try:
-            rel_src_path = project_utils.find_font_file(temp_dir, inter_name)
-            src = os.path.join(temp_dir, rel_src_path)
-            dst = os.path.join(segoe_generate.DST_DIR, segoe_name)
-            safe_copy(src, dst)
-        except Exception as e:
-            logging.warning(f"未找到 Inter ttf: {inter_name}，查找异常: {e}")
-    with open('./font_info/segoe_font_info.json', 'r', encoding='utf-8') as f:
-        infos = json.load(f)
-    info_map = {info['file'].lower(): info for info in infos}
-    for segoe_name, inter_name in mapping:
-        segoe_out = os.path.join(segoe_generate.DST_DIR, segoe_name)
-        info = info_map.get(segoe_name.lower())
-        if info and os.path.exists(segoe_out):
-            segoe_generate.copy_font_info(segoe_out, info)
-    for segoe_name, _ in mapping:
-        src = os.path.join(segoe_generate.DST_DIR, segoe_name)
-        dst = os.path.join(result_subdir, segoe_name)
-        try:
-            safe_copy(src, dst)
-        except Exception:
-            logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
+    
+    # 调用segoe_generate模块处理字体生成
+    segoe_generate.batch_rename_and_patch()
+    
+    # 复制结果文件
+    segoe_generate.copy_result_files(result_subdir)
+    
     logging.info("Segoe UI字体处理完成")

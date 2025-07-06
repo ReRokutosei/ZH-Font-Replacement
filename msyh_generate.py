@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import yaml
 from fontTools.ttLib import TTCollection, TTFont
 
-from project_utils import find_font_file, safe_copy
+from utils.file_ops import find_font_file, safe_copy
 
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
@@ -378,8 +378,22 @@ def copy_individual_ttf_to_result(result_dir):
 
 def check_ttc_generated():
     temp_dir = config.get('TEMP_DIR', './temp')
-    ttc_files = ["msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "msyhel.ttc", "msyhsb.ttc"]
+    ttc_files = ["msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "msyhxl.ttc", "msyhsb.ttc"]
     return all(os.path.exists(os.path.join(temp_dir, f)) for f in ttc_files)
+
+
+def copy_result_files(result_dir):
+    """复制TTC文件到结果目录"""
+    main_files = [
+        'msyh.ttc', 'msyhbd.ttc', 'msyhl.ttc', 'msyhxl.ttc', 'msyhsb.ttc'
+    ]
+    for file in main_files:
+        src = os.path.join(config['TEMP_DIR'], file)
+        dst = os.path.join(result_dir, file)
+        try:
+            safe_copy(src, dst)
+        except Exception:
+            logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

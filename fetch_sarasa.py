@@ -6,8 +6,10 @@ import time
 import requests as req
 import yaml
 
-from project_utils import (ensure_dir_exists, extract_archive,
-                           print_progress_bar)
+from utils.file_ops import ensure_dir_exists
+from utils.archive import extract_archive
+from utils.progress import print_progress_bar
+
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 with open(config_path, encoding='utf-8') as f:

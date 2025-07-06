@@ -1,12 +1,13 @@
 import json
 import logging
 import os
+import shutil
 
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
-from project_utils import (find_font_file, get_config_value, load_config,
-                           safe_copy)
+from utils.file_ops import find_font_file, safe_copy
+from utils.config import get_config_value, load_config
 
 config = load_config()
 DST_DIR = get_config_value(config, 'TEMP_DIR', './temp')
@@ -92,6 +93,18 @@ def batch_rename_and_patch():
                 copy_font_info(segoe_out, info)
         except Exception as e:
             logging.warning(f"找不到源字体: {inter_name}，查找异常: {e}")
+
+
+def copy_result_files(result_dir):
+    """复制生成的字体文件到结果目录"""
+    mapping = get_segoe_mapping()
+    for segoe_name, _ in mapping:
+        src = os.path.join(DST_DIR, segoe_name)
+        dst = os.path.join(result_dir, segoe_name)
+        try:
+            safe_copy(src, dst)
+        except Exception:
+            logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
 
 
 if __name__ == '__main__':

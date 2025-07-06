@@ -2,9 +2,12 @@ import logging
 
 import fetch_sarasa as sarasa
 from msyh_workflow import generate_ms_yahei
-from project_utils import (clean_temp_dir, create_directories,
-                           extract_custom_font_packages, get_config_value,
-                           get_new_result_dir, load_config, validate_config)
+from utils.config import load_config, validate_config, get_config_value
+from utils.file_ops import create_directories
+from utils.archive import extract_custom_font_packages
+from utils.font_converter import process_custom_font_packages
+from utils.result_manager import get_new_result_dir
+from utils.cleanup import clean_temp_dir
 from segoe_workflow import generate_segoe_ui
 
 logging.basicConfig(
@@ -27,31 +30,11 @@ def main():
                 try:
                     extract_custom_font_packages(config)
                     logging.info("自定义字体包已全部解压到临时目录")
+                    # 处理自定义字体包的OTF转TTF
+                    process_custom_font_packages(config)
                 except Exception as e:
-                    logging.error(f"自定义字体包解压失败: {e}")
+                    logging.error(f"自定义字体包处理失败: {e}")
                     raise
-
-                # 将 mapping 中的 otf 转为 ttf
-                from project_utils import update_mapping_otf_to_ttf
-                temp_dir = config.get('TEMP_DIR', './temp')
-                if 'msyh_mapping' in config:
-                    config['msyh_mapping'] = update_mapping_otf_to_ttf(
-                        config['msyh_mapping'], 
-                        temp_dir, 
-                        verbose=True, 
-                        config=config,
-                        msyh_mapping=config.get('msyh_mapping'),
-                        segoe_mapping=config.get('segoe_mapping')
-                    )
-                if 'segoe_mapping' in config:
-                    config['segoe_mapping'] = update_mapping_otf_to_ttf(
-                        config['segoe_mapping'], 
-                        temp_dir, 
-                        verbose=True, 
-                        config=config,
-                        msyh_mapping=config.get('msyh_mapping'),
-                        segoe_mapping=config.get('segoe_mapping')
-                    )
 
             elif download_mode == 'local':
                 packages = sarasa.find_all_local_packages()
