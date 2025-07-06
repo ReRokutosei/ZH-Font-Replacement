@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/ReRokutosei/yahei-sarasa/compare/v2.2.0...v3.0.0) (2025-07-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **utils:** 移除project_utils.py
+
+### Features
+
+* **msyh:** 新增可选将单独的TTF文件复制到结果子目录 ([edf5179](https://github.com/ReRokutosei/yahei-sarasa/commit/edf5179805db7ecbebc04f8dad884b9f9e972dba))
+* **parallel:** 实现OTF转TTF并行处理优化 ([ef6a4a1](https://github.com/ReRokutosei/yahei-sarasa/commit/ef6a4a152629ba20ddb9280aef4543dab4b0d7bf))
+
+
+* **utils:** 重构工具函数结构，优化代码组织 ([225aadf](https://github.com/ReRokutosei/yahei-sarasa/commit/225aadf474eb1663a93cda660f68d2c83a3ce657))
+
 ## [2.2.0](https://github.com/ReRokutosei/yahei-sarasa/compare/v2.1.0...v2.2.0) (2025-07-05)
 
 
