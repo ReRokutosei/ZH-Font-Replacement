@@ -120,7 +120,7 @@ graph TD
 ## 依赖安装
 
 ```shell
-pip install fonttools==4.58.4 otf2ttf py7zr==1.0.0 requests==2.32.4 pyyaml
+pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 ```
 
 ---

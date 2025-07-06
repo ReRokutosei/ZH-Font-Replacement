@@ -8,6 +8,7 @@ import zipfile
 
 import py7zr as sz
 import yaml
+from otf2ttf.official.otf2ttf import otf_to_ttf as official_otf2ttf, update_hmtx, TTFont, MAX_ERR, POST_FORMAT, REVERSE_DIRECTION
 
 
 # 配置加载
@@ -121,58 +122,66 @@ def find_otf_files(root_dir):
 
 def convert_otf_to_ttf(otf_path, verbose=False):
     """
-    调用 otf2ttf 工具将单个 OTF 文件转为 TTF。
+    使用官方实现将单个 OTF 文件转为 TTF。
     返回 (success: bool, duration: float)
     """
     start = time.time()
     try:
-        result = subprocess.run(
-            ['otf2ttf', otf_path],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            encoding='utf-8',
-            errors='replace'
-        )
-        if verbose:
-            if result.stdout:
-                logging.info(f"otf2ttf stdout: {result.stdout.strip()}")
-            if result.stderr:
-                logging.warning(f"otf2ttf stderr: {result.stderr.strip()}")
+        # 直接调用官方FontTools的otf2ttf实现
+        logging.info(f"[OTF2TTF] 开始转换: {os.path.basename(otf_path)}")
+        font = TTFont(otf_path)
+        official_otf2ttf(font, max_err=MAX_ERR)
+        # 更新hmtx表
+        update_hmtx(font, font["glyf"])
+        ttf_path = os.path.splitext(otf_path)[0] + '.ttf'
+        font.save(ttf_path)
+        logging.info(f"[OTF2TTF] 转换完成: {os.path.basename(ttf_path)}")
         success = True
-    except subprocess.CalledProcessError as e:
-        if verbose:
-            logging.error(f"转换失败: {otf_path}\n错误信息: {e}\nstdout: {e.stdout}\nstderr: {e.stderr}")
+    except Exception as e:
+        logging.error(f"转换失败: {otf_path} 异常: {str(e)}")
         success = False
     end = time.time()
     return success, end - start
 
-def batch_convert_otf_to_ttf(root_dir, verbose=True):
+def batch_convert_otf_to_ttf(root_dir, verbose=True, target_files=None):
     """
-    批量转换 root_dir 下所有 OTF 文件为 TTF。
+    批量转换 OTF 文件为 TTF。
+    root_dir: 根目录
+    verbose: 是否详细输出
+    target_files: 指定要转换的文件列表（绝对路径），为 None 时转换目录下所有 OTF 文件
     返回转换成功的 TTF 文件路径列表。
     """
-    otf_files = find_otf_files(root_dir)
+    if target_files is None:
+        otf_files = find_otf_files(root_dir)
+    else:
+        # 只转换指定的文件
+        otf_files = [f for f in target_files if f.lower().endswith('.otf')]
+    
     total = len(otf_files)
+    if total == 0:
+        if verbose:
+            logging.info("没有找到需要转换的 OTF 文件")
+        return []
+    
     if verbose:
         logging.info(f"共找到 {total} 个 OTF 文件，开始转换...")
     ttf_files = []
     global_start = time.time()
     for idx, otf_file in enumerate(otf_files, 1):
         if verbose:
-            logging.info(f"[{idx}/{total}] 正在转换: {otf_file}")
+            logging.info(f"[{idx}/{total}] 正在转换: {os.path.basename(otf_file)}")
         success, duration = convert_otf_to_ttf(otf_file, verbose=verbose)
         ttf_path = os.path.splitext(otf_file)[0] + '.ttf'
         if success and os.path.exists(ttf_path):
             ttf_files.append(ttf_path)
             if verbose:
-                logging.info(f"    转换完成，用时 {duration:.2f} 秒")
+                logging.info(f"转换完成，用时 {duration:.2f} 秒")
         else:
             if verbose:
-                logging.error(f"    转换失败，用时 {duration:.2f} 秒")
+                logging.error(f"转换失败，用时 {duration:.2f} 秒")
     global_end = time.time()
     if verbose:
-        logging.info(f"全部转换完成，总用时 {global_end - global_start:.2f} 秒")
+        logging.info(f"OTF全部转换完成，总用时 {global_end - global_start:.2f} 秒")
     return ttf_files
 
 
@@ -203,15 +212,19 @@ def update_mapping_otf_to_ttf(mapping, temp_dir, verbose=True):
                 if verbose:
                     logging.error(msg)
                 raise RuntimeError(msg)
-    # 只对 mapping 里实际找到的 otf 文件做转换
-    for otf_path in otf_set:
+    
+    # 使用批量转换函数处理所有 OTF 文件
+    if otf_set:
+        if verbose:
+            logging.info(f"发现 {len(otf_set)} 个 OTF 文件需要转换")
         try:
-            convert_otf_to_ttf(otf_path, verbose=verbose)
+            batch_convert_otf_to_ttf(temp_dir, verbose=verbose, target_files=list(otf_set))
         except Exception as e:
-            msg = f"OTF 转 TTF 失败: {otf_path}, 错误: {e}"
+            msg = f"批量 OTF 转 TTF 失败: {e}"
             if verbose:
                 logging.error(msg)
             raise RuntimeError(msg)
+    
     new_mapping = []
     for dst, src in items:
         if src.lower().endswith('.otf'):
