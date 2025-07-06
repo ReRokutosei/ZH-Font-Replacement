@@ -21,6 +21,12 @@ DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
 # 其他选项
 CLEAN_TEMP_ON_SUCCESS: true   # 主流程完成后是否自动清理 temp 目录（true/false）
 
+# 并行处理设置
+ENABLE_PARALLEL_OTF_CONVERSION: true  # 是否启用并行OTF转TTF转换
+MAX_PARALLEL_WORKERS: null            # 最大并行工作进程数，null表示自动使用CPU核心数
+ENABLE_FONT_GROUPING: true            # 是否启用字体分组处理
+ENABLE_MEMORY_OPTIMIZATION: true      # 是否启用内存优化
+
 
 # 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
 # 可为字符串（单个包）或列表（多个包），每个包需放在字体源文件目录
@@ -40,7 +46,10 @@ CLEAN_TEMP_ON_SUCCESS: true   # 主流程完成后是否自动清理 temp 目录
 #   - 'Inter-4.1.zip'
 #   - 'InterDisplay-4.1.zip'
 CUSTOM_MS_YAHEI_PACKAGE: 
-CUSTOM_SEGOE_PACKAGE: 
+  - 'SarasaGothicSC-TTF-1.0.31.7z'
+  - 'SarasaUiSC-TTF-1.0.31.7z'
+  - '14_SourceHanSerifCN.zip'
+CUSTOM_SEGOE_PACKAGE: 'Inter-4.1.zip'
 
 
 # 自定义字体映射（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
@@ -48,15 +57,15 @@ CUSTOM_SEGOE_PACKAGE:
 # segoe_mapping: 生成Segoe UI时使用的自定义英文字体文件映射（key为segoe指定的ttf名，value为源ttf文件名）
 
 msyh_mapping : [
-  ["msyh0.ttf",   "SarasaGothicSC-Regular.ttf"],
+  ["msyh0.ttf",   "SourceHanSerifCN-Regular.otf"],
   ["msyh1.ttf",   "SarasaUiSC-Regular.ttf"],
   ["msyh2.ttf",   "SarasaUiSC-Italic.ttf"],
   ["msyh3.ttf",   "SarasaGothicSC-Italic.ttf"],
-  ["msyhbd0.ttf", "SarasaUiSC-Bold.ttf"],
+  ["msyhbd0.ttf", "SourceHanSerifCN-Bold.otf"],
   ["msyhbd1.ttf", "SarasaGothicSC-Bold.ttf"],
   ["msyhbd2.ttf", "SarasaUiSC-BoldItalic.ttf"],
   ["msyhbd3.ttf", "SarasaGothicSC-BoldItalic.ttf"],
-  ["msyhl0.ttf",  "SarasaUiSC-Light.ttf"],
+  ["msyhl0.ttf",  "SourceHanSerifCN-Light.otf"],
   ["msyhl1.ttf",  "SarasaGothicSC-Light.ttf"],
   ["msyhl2.ttf",  "SarasaUiSC-LightItalic.ttf"],
   ["msyhl3.ttf",  "SarasaGothicSC-LightItalic.ttf"],
