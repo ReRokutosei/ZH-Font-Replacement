@@ -19,6 +19,7 @@
   - [一键生成流程](#一键生成流程)
   - [主要功能与原理](#主要功能与原理)
   - [设置额外字重生效（Windows）](#设置额外字重生效windows)
+  - [更新日志](#更新日志)
   - [注意事项](#注意事项)
   - [License](#license)
   - [免责声明](#免责声明)
@@ -31,7 +32,6 @@
 
 ```
 ├── main.py               # 主流程入口
-├── project_utils.py      # 通用工具集
 ├── msyh_workflow.py      # 微软雅黑生成主流程
 ├── segoe_workflow.py     # Segoe UI 生成主流程
 ├── msyh_generate.py      # 微软雅黑生成核心脚本
@@ -39,10 +39,19 @@
 ├── fetch_sarasa.py       # Sarasa Gothic 包版本获取、下载与解压
 ├── fetch_inter.py        # Inter 包版本获取、下载与解压
 ├── config.yaml           # 主配置文件
-├── font_info/            # 字体 name 字段映射与元数据
-├── result/               # 生成结果输出目录
-├── source_files/         # 字体源包目录
-└── temp/                 # 临时文件目录
+├── utils/               # 工具函数集
+│   ├── __init__.py      # 模块导出
+│   ├── config.py        # 配置管理
+│   ├── file_ops.py      # 文件操作
+│   ├── archive.py       # 压缩/解压缩
+│   ├── font_converter.py # 字体转换
+│   ├── result_manager.py # 结果管理
+│   ├── cleanup.py       # 清理功能
+│   └── progress.py      # 进度显示
+├── font_info/           # 字体 name 字段映射与元数据
+├── result/              # 生成结果输出目录
+├── source_files/        # 字体源包目录
+└── temp/               # 临时文件目录
 ```
 
 ---
@@ -200,12 +209,14 @@ python main.py
 - **高度模块化**：
   - 微软雅黑与 Segoe UI 生成流程完全解耦，风格统一，便于维护和扩展
   - 各自有独立 workflow 文件，主流程统一调度
+  - 工具函数按功能分类
 - **伪装生成**：
   - 微软雅黑：将 Sarasa SC/UiSC 多字重合成 TTC，批量重命名、替换补全 name 字段
   - Segoe UI：将 Inter 拆分、重命名、批量替换补全 name 字段
 - **自动化流程**：
   - 支持本地包与在线下载、解压，自动校验 Sarasa 包哈希
   - 结果目录自动递增，自动生成详细版本报告（含源字体包版本信息）
+  - 并行处理支持，提高字体转换效率
 
 ---
 
@@ -225,6 +236,11 @@ Windows Registry Editor Version 5.00
 
 ---
 
+## 更新日志
+
+见[CHANGELOG](CHANGELOG.md)
+
+---
 
 ## 注意事项
 
