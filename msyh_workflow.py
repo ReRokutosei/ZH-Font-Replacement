@@ -47,6 +47,9 @@ def generate_ms_yahei(config, result_subdir):
     run_with_python("msyh_generate.py", "gen_semibold")
     if check_ttc_generated(config):
         copy_result(result_subdir)
+        # 复制单独的TTF文件（如果配置启用）
+        from msyh_generate import copy_individual_ttf_to_result
+        copy_individual_ttf_to_result(result_subdir)
         logging.info("微软雅黑字体生成完成，并已复制到结果目录")
     else:
         logging.error("微软雅黑字体未生成任何文件，请检查流程！")

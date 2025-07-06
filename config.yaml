@@ -15,11 +15,12 @@ RESULT_DIR: ./result          # 结果输出目录
 SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
 
 # 下载设置
-FONT_PACKAGE_SOURCE: custom   # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
+FONT_PACKAGE_SOURCE: online   # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
 DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
 
 # 其他选项
-CLEAN_TEMP_ON_SUCCESS: false   # 主流程完成后是否自动清理 temp 目录（true/false）
+CLEAN_TEMP_ON_SUCCESS: true   # 主流程完成后是否自动清理 temp 目录（true/false）
+INCLUDE_INDIVIDUAL_TTF: true # 是否将单独的20个 msyh TTF文件也复制到结果目录（true/false）
 
 # OTF转TTF并行处理设置
 ENABLE_PARALLEL_OTF_CONVERSION: true  # 是否启用并行OTF转TTF

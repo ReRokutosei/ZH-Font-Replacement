@@ -330,6 +330,35 @@ def _batch_generate_ttc_serial(ttc_tasks):
     logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}, 总耗时: {total_duration:.2f}秒")
 
 
+def copy_individual_ttf_to_result(result_dir):
+    """
+    将单独的TTF文件复制到结果目录（如果配置启用）
+    """
+    if not config.get('INCLUDE_INDIVIDUAL_TTF', False):
+        return
+    
+    logging.info("开始复制单独的TTF文件到结果目录...")
+    temp_dir = config['TEMP_DIR']
+    mapping = get_msyh_mapping()
+    
+    copied_count = 0
+    for dst, _ in mapping:
+        src_path = os.path.join(temp_dir, dst)
+        dst_path = os.path.join(result_dir, dst)
+        
+        if os.path.exists(src_path):
+            try:
+                safe_copy(src_path, dst_path)
+                copied_count += 1
+                logging.debug(f"复制TTF文件: {dst}")
+            except Exception as e:
+                logging.warning(f"复制TTF文件失败 {dst}: {e}")
+        else:
+            logging.warning(f"TTF文件不存在: {src_path}")
+    
+    logging.info(f"TTF文件复制完成，共复制 {copied_count} 个文件到结果目录")
+
+
 def check_ttc_generated():
     temp_dir = config.get('TEMP_DIR', './temp')
     ttc_files = ["msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "msyhel.ttc", "msyhsb.ttc"]
