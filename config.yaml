@@ -1,101 +1,151 @@
-# 功能开关
-ENABLE_MS_YAHEI: true          # 是否生成微软雅黑（更纱黑体伪装）
-ENABLE_SEGOE_UI: true          # 是否生成 Segoe UI（Inter 伪装）
+# =================================================================
+# 流程启用设置
+# =================================================================
+ENABLE_MS_YAHEI: true      # 是否生成微软雅黑字体（基于更纱黑体伪装）
+ENABLE_SEGOE_UI: true      # 是否生成 Segoe UI 字体（基于 Inter 伪装）
 
-SARASA_VERSION_STYLE: hinted   # Sarasa 包类型：hinted、unhinted
 
-# 生成的微软雅黑数字风格: monospaced(等宽) 或 proportional(不等宽)
+# =================================================================
+# 目录设置
+# =================================================================
+TEMP_DIR: ./temp           # 临时文件目录，用于存放解压和处理过程中的文件
+RESULT_DIR: ./result       # 最终生成的字体文件输出目录
+SOURCE_FILES_DIR: ./source_files  # 字体源文件目录，存放下载或自定义的字体包
+
+
+# =================================================================
+# 字体风格设置
+# =================================================================
+# 更纱黑体包类型选择：
+# - hinted：   带微调信息，文件较大，显示效果更好（推荐）
+# - unhinted： 无微调信息，文件较小，显示效果稍差
+SARASA_VERSION_STYLE: hinted   
+
+# 生成的微软雅黑数字显示风格：
+# - monospaced：  等宽数字
+# - proportional：不等宽数字
 MS_YAHEI_NUMERALS_STYLE: proportional 
-# 生成的Segoe UI 间距风格: loose(宽松) 或 compact(紧凑)
+
+# 生成的 Segoe UI 字符间距风格：
+# - loose：   宽松(正常)间距
+# - compact： 紧凑间距
 SEGOE_UI_SPACING_STYLE: compact
 
-# 目录设置
-TEMP_DIR: ./temp              # 临时文件目录
-RESULT_DIR: ./result          # 结果输出目录
-SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
 
-# 下载设置
-FONT_PACKAGE_SOURCE: online   # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
-DOWNLOAD_TIMEOUT: 60          # 下载超时时间（秒）
+# =================================================================
+# 字体包获取模式
+# =================================================================
+# 字体包获取方式：
+# - online： 自动从 GitHub 下载最新版本（推荐）
+# - local：  仅使用本地目录中的更纱黑体、Intel字体包
+# - custom： 使用自定义字体包（需要额外配置下方的自定义选项）
+FONT_PACKAGE_SOURCE: online
 
+# online 模式的超时时间（秒）
+DOWNLOAD_TIMEOUT: 60
+
+
+# =================================================================
 # 其他选项
-CLEAN_TEMP_ON_SUCCESS: true   # 主流程完成后是否自动清理 temp 目录（true/false）
-INCLUDE_INDIVIDUAL_TTF: true # 是否将单独的20个 msyh TTF文件也复制到结果目录（true/false）
+# =================================================================
+# 是否在处理完成后自动清理临时文件
+CLEAN_TEMP_ON_SUCCESS: true
 
+# 是否在结果目录中同时保存生成的微软雅黑TTF文件
+# - true：  同时保存20个的微软雅黑TTF文件（适合旧版本 Win10）
+# - false： 仅保存合并后的微软雅黑TTC文件
+INCLUDE_INDIVIDUAL_TTF: true
+
+
+# =================================================================
+# 性能优化设置
+# =================================================================
 # OTF转TTF并行处理设置
-ENABLE_PARALLEL_OTF_CONVERSION: true  # 是否启用并行OTF转TTF
-MAX_PARALLEL_WORKERS: null            # 最大并行工作进程数，null表示自动使用CPU核心数
-ENABLE_FONT_GROUPING: true            # 是否启用字体分组处理
-ENABLE_MEMORY_OPTIMIZATION: true      # 是否启用内存优化
+ENABLE_PARALLEL_OTF_CONVERSION: true   # 是否启用并行转换（推荐开启）
+MAX_PARALLEL_WORKERS: null             # 最大并行进程数（null表示自动使用CPU核心数）
+ENABLE_FONT_GROUPING: true             # 是否启用字体分组处理（可减少内存占用）
+ENABLE_MEMORY_OPTIMIZATION: true       # 是否启用内存优化（推荐开启）
 
-# 并行TTC生成处理设置
-ENABLE_PARALLEL_TTC_GENERATION: true  # 是否启用并行TTC生成（推荐开启，可显著提升5个TTC文件的生成速度）
-MAX_PARALLEL_TTC_WORKERS: 4           # 最大TTC生成工作线程数，建议设置为3-4（适合5个TTC文件）
+# TTC文件生成的并行处理设置
+ENABLE_PARALLEL_TTC_GENERATION: true   # 是否启用并行生成（推荐开启，可大幅提升速度）
+MAX_PARALLEL_TTC_WORKERS: 4            # 最大并行线程数（推荐3-4，过多可能反而变慢）
 
 
-# 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
-# 可为字符串（单个包）或列表（多个包），每个包需放在字体源文件目录
-# CUSTOM_MS_YAHEI_PACKAGE: 指定自定义中文字体包（zip/7z），如有多个请用列表
-# CUSTOM_SEGOE_PACKAGE: 指定自定义英文字体包（zip/7z），如有多个请用列表
-# 示例：
-
-# CUSTOM_MS_YAHEI_PACKAGE: 'SarasaGothicSC-TTF-1.0.31.7z'
-# 或
-# CUSTOM_MS_YAHEI_PACKAGE:
-#   - 'SarasaGothicSC-TTF-1.0.31.7z'
-#   - 'SarasaUiSC-TTF-1.0.31.7z'
-
-# CUSTOM_SEGOE_PACKAGE: 'Inter-4.1.zip'
-# 或
-# CUSTOM_SEGOE_PACKAGE:
-#   - 'Inter-4.1.zip'
-#   - 'InterDisplay-4.1.zip'
-CUSTOM_MS_YAHEI_PACKAGE: 
-  - 'SarasaGothicSC-TTF-1.0.31.7z'
-  - 'SarasaUiSC-TTF-1.0.31.7z'
+# =================================================================
+# 自定义字体包设置（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
+# =================================================================
+# 自定义中文字体包配置
+# 支持单个文件（字符串）或多个文件（列表）形式
+# 所有文件都需要放在 SOURCE_FILES_DIR 目录中
+CUSTOM_MS_YAHEI_PACKAGE:              # 自定义中文字体包（支持zip/7z格式）
+  - 'SarasaGothicSC-TTF-1.0.31.7z'    # 可以使用多个包
+  - 'SarasaUiSC-TTF-1.0.31.7z'        # 确保包内含有下方映射表中指定的字体
   - '14_SourceHanSerifCN.zip'
-CUSTOM_SEGOE_PACKAGE: 'Inter-4.1.zip'
+
+# 自定义英文字体包配置
+CUSTOM_SEGOE_PACKAGE: 'Inter-4.1.zip' # 自定义英文字体包（支持zip/7z格式）
 
 
-# 自定义字体映射（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
-# msyh_mapping: 生成微软雅黑时使用的自定义中文字体文件映射（key为微软雅黑指定的ttf名，value为源ttf文件名）
-# segoe_mapping: 生成Segoe UI时使用的自定义英文字体文件映射（key为segoe指定的ttf名，value为源ttf文件名）
+# 自定义字体文件映射配置
+# 说明：
+# - key：  程序指定的目标文件名（请勿修改）
+# - value：自定义字体包中的源文件名（根据实际情况修改）
+# - 映射规则可参考 README.md 中的"Full Name表"部分
+msyh_mapping: [
+    # 常规
+    ["msyh0.ttf", "SarasaGothicSC-Regular.ttf"], # 常规
+    ["msyh1.ttf", "SarasaUiSC-Regular.ttf"],     # UI常规
+    ["msyh2.ttf", "SarasaGothicSC-Italic.ttf"],  # 常规斜体
+    ["msyh3.ttf", "SarasaUiSC-Italic.ttf"],      # UI斜体
 
-msyh_mapping : [
-  ["msyh0.ttf",   "SourceHanSerifCN-Regular.otf"],
-  ["msyh1.ttf",   "SarasaUiSC-Regular.ttf"],
-  ["msyh2.ttf",   "SarasaUiSC-Italic.ttf"],
-  ["msyh3.ttf",   "SarasaGothicSC-Italic.ttf"],
-  ["msyhbd0.ttf", "SourceHanSerifCN-Bold.otf"],
-  ["msyhbd1.ttf", "SarasaGothicSC-Bold.ttf"],
-  ["msyhbd2.ttf", "SarasaUiSC-BoldItalic.ttf"],
-  ["msyhbd3.ttf", "SarasaGothicSC-BoldItalic.ttf"],
-  ["msyhl0.ttf",  "SourceHanSerifCN-Light.otf"],
-  ["msyhl1.ttf",  "SarasaGothicSC-Light.ttf"],
-  ["msyhl2.ttf",  "SarasaUiSC-LightItalic.ttf"],
-  ["msyhl3.ttf",  "SarasaGothicSC-LightItalic.ttf"],
-  ["msyhsb0.ttf", "SarasaUiSC-SemiBold.ttf"],
-  ["msyhsb1.ttf", "SarasaGothicSC-SemiBold.ttf"],
-  ["msyhsb2.ttf", "SarasaUiSC-SemiBoldItalic.ttf"],
-  ["msyhsb3.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"],
-  ["msyhxl0.ttf", "SarasaUiSC-ExtraLight.ttf"],
-  ["msyhxl1.ttf", "SarasaGothicSC-ExtraLight.ttf"],
-  ["msyhxl2.ttf", "SarasaUiSC-ExtraLightItalic.ttf"],
-  ["msyhxl3.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"]
+    # 粗体
+    ["msyhbd0.ttf", "SarasaGothicSC-Bold.ttf"],  # 以下文件名规则相同
+    ["msyhbd1.ttf", "SarasaUiSC-Bold.ttf"],
+    ["msyhbd2.ttf", "SarasaGothicSC-BoldItalic.ttf"],
+    ["msyhbd3.ttf", "SarasaUi-BoldItalic.ttf"],
+
+    # 细体
+    ["msyhl0.ttf", "SarasaGothicSC-Light.ttf"],
+    ["msyhl1.ttf", "SarasaUiSC-Light.ttf"],
+    ["msyhl2.ttf", "SarasaGothicSC-LightItalic.ttf"],
+    ["msyhl3.ttf", "SarasaUiSC-LightItalic.ttf"],
+
+    # 半粗体
+    ["msyhsb0.ttf", "SarasaGothicSC-SemiBold.ttf"],
+    ["msyhsb1.ttf", "SarasaUiSC-SemiBold.ttf"],
+    ["msyhsb2.ttf", "SarasaGothicSC-SemiBoldItalic.ttf"],
+    ["msyhsb3.ttf", "SarasaUiSC-SemiBoldItalic.ttf"],
+
+    # 极细体
+    ["msyhxl0.ttf", "SarasaGothicSC-ExtraLight.ttf"],
+    ["msyhxl1.ttf", "SarasaUiSC-ExtraLight.ttf"],
+    ["msyhxl2.ttf", "SarasaGothicSC-ExtraLightItalic.ttf"],
+    ["msyhxl3.ttf", "SarasaUiSC-ExtraLightItalic.ttf"]
 ]
 
-
+# Segoe UI 字体映射表
 segoe_mapping: [
+  # 常规体
   ["segoeui.ttf",    "Inter-Regular.ttf"],
   ["segoeuii.ttf",   "Inter-Italic.ttf"],
+  
+  # 细体
   ["segoeuisl.ttf",  "Inter-Light.ttf"],
   ["seguisli.ttf",   "Inter-LightItalic.ttf"],
+  
+  # 极细体
   ["segoeuil.ttf",   "Inter-Thin.ttf"],
   ["seguili.ttf",    "Inter-ThinItalic.ttf"],
+  
+  # 粗体
   ["segoeuib.ttf",   "Inter-Bold.ttf"],
   ["segoeuiz.ttf",   "Inter-BoldItalic.ttf"],
+  
+  # 黑体
   ["seguibl.ttf",    "Inter-Black.ttf"],
   ["seguibli.ttf",   "Inter-BlackItalic.ttf"],
+  
+  # 半粗体
   ["seguisb.ttf",    "Inter-SemiBold.ttf"],
   ["seguisbi.ttf",   "Inter-SemiBoldItalic.ttf"]
 ]
