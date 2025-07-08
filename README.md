@@ -2,10 +2,11 @@
 
 ## 项目简介
 
-自动化生成更佳显示效果的系统字体替代方案：
+自动化生成更佳显示效果的Windows10/11系统中文字体替代方案：
 
 - 以更纱黑体（Sarasa Gothic）为基础，生成伪装的微软雅黑（MS YaHei）
 - 以 Inter 为基础，生成伪装的 Segoe UI
+- 也可自定义源字体包
 
 本项目仅限开发与测试用途，不得用于商业生产环境。
 
@@ -70,53 +71,81 @@ graph TD
     F -- 是 --> G[处理Segoe UI流程]
 
     subgraph 微软雅黑处理
-        E --> H{选择字体包类型}
-        H -- hinted --> I[获取hinted版本]
-        H -- unhinted --> J[获取unhinted版本]
+        E --> K{字体包获取模式}
+        
+        %% Custom模式分支
+        K -- custom --> M2[使用自定义字体包]
+        M2 --> O2[解压字体包]
+        O2 --> P3[准备TTF文件]
+        P3 --> Q2[按自定义映射规则修改字体信息]
+        Q2 --> R2[生成TTC文件]
+        R2 --> S[复制到结果目录]
 
-        I --> K{下载模式?}
-        J --> K
+        %% 标准模式分支
+        K -- standard --> H{字体包来源}
+        H -- online --> I[在线下载更纱黑体包]
+        H -- local --> J[使用本地更纱黑体包]
 
-        K -- online --> L[在线获取最新版字体包]
-        K -- local --> M[使用本地更纱字体包]
+        I --> I2[选择字体包类型]
+        J --> I2
+        I2 -- hinted --> O[解压字体包]
+        I2 -- unhinted --> O
 
-        L --> N[下载字体包]
-        N --> O[解压字体包]
-        M --> O
+        O --> P0[准备TTF文件]
+        P0 --> P4[重命名为msyhX.ttf]
 
-        O --> S1{生成msyh的数字是否等宽?}
+        P4 --> S1{数字显示风格}
         S1 -- monospaced --> P1[使用等宽映射表]
         S1 -- proportional --> P2[使用不等宽映射表]
-        P1 --> Q[根据json表覆写元信息]
+        
+        P1 --> Q[修改字体信息]
         P2 --> Q
-        Q --> R[合并为TTC文件]
-        R --> S[复制ttc文件到结果目录]
+        Q --> R[生成TTC文件]
+        R --> S
     end
 
     subgraph Segoe UI处理
-        G --> T{下载模式?}
-        T -- online --> U[在线获取最新版字体包]
-        T -- local --> V[使用本地Inter字体包]
+        G --> T2{字体包获取模式}
+        
+        %% Custom模式分支
+        T2 -- custom --> V2[使用自定义字体包]
+        V2 --> X2[解压字体包]
+        X2 --> Y3[寻找目标TTF文件]
+        Y3 --> Z2[按自定义映射规则修改字体信息]
+        Z2 --> AA2[生成TTF字体]
+        AA2 --> AA[复制到结果目录]
 
-        U --> W[下载字体包]
-        W --> X[解压字体包]
+        %% 标准模式分支
+        T2 -- standard --> T3{字体包来源}
+        T3 -- online --> U[在线下载Inter字体包]
+        T3 -- local --> V[使用本地Inter字体包]
+
+        U --> X[解压字体包]
         V --> X
+        X --> Y0[准备TTF文件]
 
-        X --> S2{生成segoe的字符间距?}
+        Y0 --> S2{字符间距风格}
         S2 -- loose --> Y1[使用宽松映射表]
         S2 -- compact --> Y2[使用紧凑映射表]
-        Y1 --> Z[根据json表覆写元信息]
+        Y1 --> Z[修改字体信息]
         Y2 --> Z
-        Z --> AA[复制ttf文件到结果目录]
+        Z --> Z3[生成TTF字体]
+        Z3 --> AA
     end
 
-    S --> AB{清理temp目录?}
+    S --> AB{是否清理临时文件?}
     AA --> AB
-    AB -- true --> AC[清理temp文件夹]
-    AB -- false --> AD[保留临时文件]
+    AB -- 是 --> AC[清理temp目录]
+    AB -- 否 --> AD[保留临时文件]
 
     AD --> AE[结束]
     AC --> AE
+
+    %% 样式定义
+    classDef decision fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef process fill:#bbf,stroke:#333,stroke-width:2px;
+    class K,H,S1,T2,T3,S2,AB decision;
+    class M2,I,J,O,Q,R,V2,U,V,Z process;
 ```
 
 ---
@@ -139,13 +168,13 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 所有配置均由 `config.yaml` 控制：
 
 ```yaml
-ENABLE_MS_YAHEI: 1                # 是否生成微软雅黑（更纱黑体伪装）
+ENABLE_MS_YAHEI: true             # 是否生成微软雅黑（更纱黑体伪装）
 ENABLE_SEGOE_UI: true             # 是否生成 Segoe UI（Inter 伪装）
 SARASA_VERSION_STYLE: hinted      # Sarasa 包类型：hinted、unhinted
 TEMP_DIR: ./temp                  # 临时文件目录
 RESULT_DIR: ./result              # 结果输出目录
 SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
-FONT_PACKAGE_SOURCE: online               # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
+FONT_PACKAGE_SOURCE: online       # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
 DOWNLOAD_TIMEOUT: 60              # 下载超时时间（秒）
 CLEAN_TEMP_ON_SUCCESS: true       # 主流程完成后是否自动清理 temp 目录
 
