@@ -1,22 +1,46 @@
 # ZH-Font-Replacement
 
+## 背景
+
+在最近的一次Windows更新后，系统UI字体意外地恢复到了~~丑丑的~~默认的微软雅黑字体。在此之前，我使用的是"等距更纱黑体替换微软雅黑"方案，该方案源自一位大佬基于更纱黑体所做的改进。我记得这位大佬原帖发在某乎上：`等距更纱完美替换微软雅黑，且生效全部5个字重及斜体（提供非等距版）`，但现在有关的搜索结果是某度知道上的相关回答。尽管原作者分享的文件仍然保存在我的本地，但考虑到更纱黑体可能已经经历了多次更新，我需要更新版本的替换包。
+
+一番查找后，目前存在多种解决方案：从功能强大的工具如`No!! MeiryoUI`到各种大佬精心制作的成品，发布时间也各有不同。这些方案似乎都不太符合我的需求。在搜索过程中，我注意到了项目[yahei-sarasa](https://github.com/chenh96/yahei-sarasa)，该项目通过Github API获取最新版本的更纱黑体来构建微软雅黑字体，这一思路给了我很大启发。于是，我fork了这个项目并进行了相应的修改。但在后续实践中发现偏离预期效果，并且原项目使用FontForge，在Windows环境调用不是很方便，于是我决定彻底重写，并解除fork关系。
+
+在这个过程中，我提取了原版微软雅黑的NAME(中英)元信息存储为json~~(我不喜欢XML)~~，并借鉴了之前提到的“等距更纱完美替换微软雅黑”方案，补充了额外的斜体元数据（虽然不确定是否必要）。具体来说，原版msyh.ttc只包含两个常规的ttf，我增加了2个对应的斜体。
+
+目前项目只是简单地做了改写元数据的工作，因为我不会具体的字形优化。
+
 ## 项目简介
 
-自动化生成更佳显示效果的Windows10/11系统中文字体替代方案：
+本项目用于追踪最新版本Release，自动生成**替换** Windows 10/11 的默认字体文件（微软雅黑、Segoe UI）。
 
-- 以更纱黑体（Sarasa Gothic）为基础，生成伪装的微软雅黑（MS YaHei）
-- 以 Inter 为基础，生成伪装的 Segoe UI
-- 也可自定义源字体包
+## 主要功能
 
-本项目仅限开发与测试用途，不得用于商业生产环境。
+-   基于 **更纱黑体** 生成微软雅黑字体文件。
+-   基于 **Inter** 生成Segoe UI字体文件。
+-   可自定义其他字体包作为生成基础。
+
+
+## 重要须知
+
+⚠️ **重要警告：**
+- 本项目生成的文件**仅限用于开发与测试环境**。
+- **严禁在生产环境或日常使用的 Windows 系统中使用！**
+- **你需要自行查找教程并手动替换**系统中的原始字体文件。
+- **本工具不提供替换教程或自动化替换功能。**
+- 字体替换存在风险，**请确保具备相关知识和实操能力**。
+
 
 - [ZH-Font-Replacement](#zh-font-replacement)
   - [项目简介](#项目简介)
+  - [主要功能](#主要功能)
+  - [重要须知](#重要须知)
   - [项目结构](#项目结构)
   - [流程总览](#流程总览)
   - [环境要求](#环境要求)
   - [依赖安装](#依赖安装)
   - [配置说明](#配置说明)
+  - [字体包说明](#字体包说明)
   - [一键生成流程](#一键生成流程)
   - [主要功能与原理](#主要功能与原理)
   - [设置额外字重生效（Windows）](#设置额外字重生效windows)
@@ -26,6 +50,7 @@
   - [免责声明](#免责声明)
   - [致谢](#致谢)
   - [Full Name表](#full-name表)
+
 
 ---
 
@@ -40,6 +65,7 @@
 ├── fetch_sarasa.py       # Sarasa Gothic 包版本获取、下载与解压
 ├── fetch_inter.py        # Inter 包版本获取、下载与解压
 ├── config.yaml           # 主配置文件
+├── defualt_custom.template # 自定义字体包映射规则模板
 ├── utils/               # 工具函数集
 │   ├── __init__.py      # 模块导出
 │   ├── config.py        # 配置管理
@@ -59,7 +85,7 @@
 
 ## 流程总览
 
-```mermaid
+``mermaid
 graph TD
     A[开始] --> B[读取config.yaml]
     B --> C[开始流程]
@@ -165,44 +191,24 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 
 ## 配置说明
 
-所有配置均由 `config.yaml` 控制：
+所有配置均由 [config.yaml](config.yaml) 控制。
 
-```yaml
-ENABLE_MS_YAHEI: true             # 是否生成微软雅黑（更纱黑体伪装）
-ENABLE_SEGOE_UI: true             # 是否生成 Segoe UI（Inter 伪装）
-SARASA_VERSION_STYLE: hinted      # Sarasa 包类型：hinted、unhinted
-TEMP_DIR: ./temp                  # 临时文件目录
-RESULT_DIR: ./result              # 结果输出目录
-SOURCE_FILES_DIR: ./source_files  # 字体源文件目录
-FONT_PACKAGE_SOURCE: online       # online: 自动下载，local: 仅使用本地包，custom: 使用自定义字体包
-DOWNLOAD_TIMEOUT: 60              # 下载超时时间（秒）
-CLEAN_TEMP_ON_SUCCESS: true       # 主流程完成后是否自动清理 temp 目录
-
-# 生成的微软雅黑数字风格: monospaced 或 proportional
-MS_YAHEI_NUMERALS_STYLE: proportional 
-
-# 生成的Segoe UI 间距风格: loose 或 compact
-SEGOE_UI_SPACING_STYLE: compact
-
-# 自定义字体包路径（仅当 FONT_PACKAGE_SOURCE: custom 时生效）
-# CUSTOM_MS_YAHEI_PACKAGE: 指定的自定义中文字体包（zip/7z），需放在字体源文件目录
-# CUSTOM_SEGOE_PACKAGE: 指定的自定义英文字体包（zip/7z），需放在字体源文件目录
-```
+## 字体包说明
 
 - **更纱系列字体**（ SarasaGothicSC、SarasaUiSC）中英文字符外观一致。
   - 在阿拉伯数字上有区别：
-    - **不带 `UI` 标识**的是**不等宽设计**（Proportional），即每个字符宽度不同；
-    - 而**有 `UI` 标识**的则是**等宽设计**，且数字 **1 的底部多出一横**。
+    - **`Gothic` 标识**的是**不等宽设计**（Proportional），即每个字符宽度不同；
+    - ** `UI` 标识**的则是**等宽设计**，且数字 **1 的底部多出一横**。
 
 - **Inter 字体**包含两种常见变体：`InterDisplay` 和 `Inter`。两者字符外观一致。
   - 区别在于，**带 `Display` 标识**的排版上会更加紧凑。
 
-- **本地兜底**：如需手动准备字体包，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
+- **local 模式**：如使用 `FONT_PACKAGE_SOURCE: online` ，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
 
   - Sarasa Gothic：
     - `SarasaGothicSC-TTF-<版本号>.7z` 或 `SarasaGothicSC-TTF-Unhinted-<版本号>.7z`
     - `SarasaUiSC-TTF-<版本号>.7z` 或 `SarasaUiSC-TTF-Unhinted-<版本号>.7z`
-    - 推荐优先使用无 `Unhinted` 的包，文件可从 [Sarasa Gothic Releases](https://github.com/be5invis/Sarasa-Gothic/releases) 获取
+    - 推荐优先使用没有 `Unhinted` 标识的包，文件可从 [Sarasa Gothic Releases](https://github.com/be5invis/Sarasa-Gothic/releases) 获取
   - Inter：
     - `Inter-<版本号>.zip`，如 `Inter-4.1.zip`
     - 可从 [Inter Releases](https://github.com/rsms/inter/releases) 获取
@@ -236,7 +242,7 @@ python main.py
 ## 主要功能与原理
 
 - **高度模块化**：
-  - 微软雅黑与 Segoe UI 生成流程完全解耦，风格统一，便于维护和扩展
+  - 微软雅黑与 Segoe UI 生成流程完全解耦
   - 各自有独立 workflow 文件，主流程统一调度
   - 工具函数按功能分类
 - **伪装生成**：
@@ -253,7 +259,7 @@ python main.py
 
 如需让极细和半粗字重在 Windows 下生效，请新建 reg 文件，内容如下：
 
-```reg
+``reg
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
@@ -262,6 +268,8 @@ Windows Registry Editor Version 5.00
 ```
 
 保存后双击导入，重启生效。
+
+与字体相关的注册表项，可参考[registry](registry.md)
 
 ---
 

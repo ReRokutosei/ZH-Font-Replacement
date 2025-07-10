@@ -96,9 +96,10 @@ CUSTOM_SEGOE_PACKAGE: 'Inter-4.1.zip' # 自定义英文字体包（支持zip/7z�
 
 # 自定义字体文件映射配置
 # 说明：
-# - key：  程序指定的目标文件名（请勿修改）
-# - value：自定义字体包中的源文件名（根据实际情况修改）
-# - 映射规则可参考 README.md 中的"Full Name表"部分
+# key：  程序指定的目标文件名（请勿修改）
+# value：自定义字体包中的源文件名（根据实际情况修改）
+# 映射规则可参考 README.md 中的"Full Name表"部分
+# 当 MSYH_ENABLE_EXTRA_ITALIC: false 时，index为2和3的映射项不参与流程作业，内容可以为空
 msyh_mapping: [
     # 常规
     ["msyh0.ttf", "SarasaGothicSC-Regular.ttf"], # 常规
