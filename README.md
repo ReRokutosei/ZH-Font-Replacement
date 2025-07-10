@@ -6,7 +6,7 @@
 
 一番查找后，目前存在多种解决方案：从功能强大的工具如`No!! MeiryoUI`到各种大佬精心制作的成品，发布时间也各有不同。这些方案似乎都不太符合我的需求。在搜索过程中，我注意到了项目[yahei-sarasa](https://github.com/chenh96/yahei-sarasa)，该项目通过Github API获取最新版本的更纱黑体来构建微软雅黑字体，这一思路给了我很大启发。于是，我fork了这个项目并进行了相应的修改。但在后续实践中发现偏离预期效果，并且原项目使用FontForge，在Windows环境调用不是很方便，于是我决定彻底重写，并解除fork关系。
 
-在这个过程中，我提取了原版微软雅黑的NAME(中英)元信息存储为json~~(我不喜欢XML)~~，并借鉴了之前提到的“等距更纱完美替换微软雅黑”方案，补充了额外的斜体元数据（虽然不确定是否必要）。具体来说，原版msyh.ttc只包含两个常规的ttf，我增加了2个对应的斜体。
+在这个过程中，我提取了原版微软雅黑的NAME(中英)元信息存储为json~~我不喜欢XML~~，并借鉴了之前提到的“等距更纱完美替换微软雅黑”方案，补充了额外的斜体元数据（虽然不确定是否必要）。具体来说，原版msyh.ttc只包含两个常规的ttf，我增加了2个对应的斜体。
 
 目前项目只是简单地做了改写元数据的工作，因为我不会具体的字形优化。
 
@@ -32,6 +32,7 @@
 
 
 - [ZH-Font-Replacement](#zh-font-replacement)
+  - [背景](#背景)
   - [项目简介](#项目简介)
   - [主要功能](#主要功能)
   - [重要须知](#重要须知)
@@ -85,7 +86,7 @@
 
 ## 流程总览
 
-``mermaid
+```mermaid
 graph TD
     A[开始] --> B[读取config.yaml]
     B --> C[开始流程]
@@ -198,7 +199,7 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 - **更纱系列字体**（ SarasaGothicSC、SarasaUiSC）中英文字符外观一致。
   - 在阿拉伯数字上有区别：
     - **`Gothic` 标识**的是**不等宽设计**（Proportional），即每个字符宽度不同；
-    - ** `UI` 标识**的则是**等宽设计**，且数字 **1 的底部多出一横**。
+    - **`UI` 标识**的则是**等宽设计**，且数字 1 的底部多出一横。
 
 - **Inter 字体**包含两种常见变体：`InterDisplay` 和 `Inter`。两者字符外观一致。
   - 区别在于，**带 `Display` 标识**的排版上会更加紧凑。
@@ -259,7 +260,7 @@ python main.py
 
 如需让极细和半粗字重在 Windows 下生效，请新建 reg 文件，内容如下：
 
-``reg
+```reg
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts]
