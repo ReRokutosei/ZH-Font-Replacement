@@ -176,8 +176,7 @@ def batch_copy_msyh_ttf():
     logging.info(f"开始复制源TTF文件，共 {total} 个文件")
 
     copied_count = 0
-    failed_count = 0
-
+    
     for idx, (dst, src) in enumerate(mapping, 1):
         try:
             rel_src_path = find_font_file(temp_dir, src)
@@ -188,15 +187,12 @@ def batch_copy_msyh_ttf():
             print_progress_bar(idx, total, prefix="复制源TTF文件", suffix=f"{dst} ({idx}/{total})")
             logging.debug(f"复制成功: {src} -> {dst}")
         except Exception as e:
-            failed_count += 1
-            print()
-            logging.warning(f"源字体不存在: {src}，查找异常: {e}")
+            print()  # 清理进度条
+            logging.error(f"源字体不存在: {src}，查找异常: {e}")
+            raise RuntimeError(f"缺少必需的源字体文件: {src}") from e
     
     print()  # 进度条完成后换行
-    logging.info(f"TTF文件复制完成 - 成功: {copied_count}, 失败: {failed_count}")
-
-    if failed_count > 0:
-        logging.warning(f"有 {failed_count} 个源TTF文件复制失败")
+    logging.info(f"TTF文件复制完成 - 成功: {copied_count}")
 
 
 def batch_patch_names():
