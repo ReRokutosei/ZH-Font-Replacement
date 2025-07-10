@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/ReRokutosei/yahei-sarasa/compare/v3.0.0...v3.1.0) (2025-07-10)
+
+
+### Features
+
+* **msyh:** 增加配置项`MSYH_ENABLE_EXTRA_ITALIC`，可选是否生成额外的斜体字重 ([ea20df1](https://github.com/ReRokutosei/yahei-sarasa/commit/ea20df1571213d079c5c6091a6eec9d86fa11b19))
+* **workflow:** 增加简单的进度条输出 ([099efc8](https://github.com/ReRokutosei/yahei-sarasa/commit/099efc8ebb0a06870361f9f1fbbcb3b0fdf3dc0c))
+
+
+### Bug Fixes
+
+* **msyh:** 修复字体映射顺序错乱问题 ([360cfe7](https://github.com/ReRokutosei/yahei-sarasa/commit/360cfe764de9b5dbac6b9a14e3866d6c77b9cfee))
+* **msyh:** 移除了`failed_count`计数器，在发现任何字体缺失时终止流程 ([fcc9b76](https://github.com/ReRokutosei/yahei-sarasa/commit/fcc9b76e643be455f415ff196ad4af0de2be92da))
+
 ## [3.0.0](https://github.com/ReRokutosei/yahei-sarasa/compare/v2.2.0...v3.0.0) (2025-07-06)
 
 
