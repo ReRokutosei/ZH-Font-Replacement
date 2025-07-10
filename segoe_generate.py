@@ -8,6 +8,7 @@ from fontTools.ttLib.tables._n_a_m_e import NameRecord
 
 from utils.config import get_config_value, load_config
 from utils.file_ops import find_font_file, safe_copy
+from utils.progress import print_progress_bar
 
 config = load_config()
 DST_DIR = get_config_value(config, "TEMP_DIR", "./temp")
@@ -85,7 +86,11 @@ def batch_rename_and_patch():
     info_map = {info["file"].lower(): info for info in infos}
     mapping = get_segoe_mapping()
     temp_dir = get_config_value(config, "TEMP_DIR", "./temp")
-    for segoe_name, inter_name in mapping:
+    
+    total = len(mapping)
+    logging.info(f"开始处理 {total} 个 Segoe UI 字体文件")
+    
+    for idx, (segoe_name, inter_name) in enumerate(mapping, 1):
         try:
             rel_inter_path = find_font_file(temp_dir, inter_name)
             inter_path = os.path.join(temp_dir, rel_inter_path)
@@ -94,20 +99,29 @@ def batch_rename_and_patch():
             info = info_map.get(segoe_name.lower())
             if info:
                 copy_font_info(segoe_out, info)
+            print_progress_bar(idx, total, prefix="处理Segoe UI字体", suffix=f"{segoe_name} ({idx}/{total})")
         except Exception as e:
             logging.warning(f"找不到源字体: {inter_name}，查找异常: {e}")
+    
+    print()  # 进度条完成后换行
 
 
 def copy_result_files(result_dir):
     """复制生成的字体文件到结果目录"""
     mapping = get_segoe_mapping()
-    for segoe_name, _ in mapping:
+    total = len(mapping)
+    logging.info(f"开始复制 {total} 个 Segoe UI 字体文件到结果目录")
+    
+    for idx, (segoe_name, _) in enumerate(mapping, 1):
         src = os.path.join(DST_DIR, segoe_name)
         dst = os.path.join(result_dir, segoe_name)
         try:
             safe_copy(src, dst)
+            print_progress_bar(idx, total, prefix="复制Segoe UI字体", suffix=f"{segoe_name} ({idx}/{total})")
         except Exception:
             logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
+    
+    print()  # 进度条完成后换行
 
 
 if __name__ == "__main__":

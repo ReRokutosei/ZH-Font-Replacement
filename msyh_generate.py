@@ -10,6 +10,7 @@ import yaml
 from fontTools.ttLib import TTCollection, TTFont
 
 from utils.file_ops import find_font_file, safe_copy
+from utils.progress import print_progress_bar
 
 config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
 with open(config_path, encoding="utf-8") as f:
@@ -28,7 +29,7 @@ MSYH_MAPPING_MONOSPACED = [
     ("msyhbd0.ttf", "SarasaGothicSC-Bold.ttf"),
     ("msyhbd1.ttf", "SarasaUiSC-Bold.ttf"),
     ("msyhbd2.ttf", "SarasaGothicSC-BoldItalic.ttf"),
-    ("msyhbd3.ttf", "SarasaUi-BoldItalic.ttf"),
+    ("msyhbd3.ttf", "SarasaUiSC-BoldItalic.ttf"),
     ("msyhl0.ttf", "SarasaGothicSC-Light.ttf"),
     ("msyhl1.ttf", "SarasaUiSC-Light.ttf"),
     ("msyhl2.ttf", "SarasaGothicSC-LightItalic.ttf"),
@@ -171,23 +172,27 @@ def get_msyh_mapping():
 def batch_copy_msyh_ttf():
     mapping = get_msyh_mapping()
     temp_dir = config["TEMP_DIR"]
-    logging.info(f"开始复制源TTF文件，共 {len(mapping)} 个文件")
+    total = len(mapping)
+    logging.info(f"开始复制源TTF文件，共 {total} 个文件")
 
     copied_count = 0
     failed_count = 0
 
-    for dst, src in mapping:
+    for idx, (dst, src) in enumerate(mapping, 1):
         try:
             rel_src_path = find_font_file(temp_dir, src)
             src_path = os.path.join(temp_dir, rel_src_path)
             dst_path = os.path.join(temp_dir, dst)
             safe_copy(src_path, dst_path)
             copied_count += 1
+            print_progress_bar(idx, total, prefix="复制源TTF文件", suffix=f"{dst} ({idx}/{total})")
             logging.debug(f"复制成功: {src} -> {dst}")
         except Exception as e:
             failed_count += 1
+            print()
             logging.warning(f"源字体不存在: {src}，查找异常: {e}")
-
+    
+    print()  # 进度条完成后换行
     logging.info(f"TTF文件复制完成 - 成功: {copied_count}, 失败: {failed_count}")
 
     if failed_count > 0:
@@ -196,22 +201,24 @@ def batch_copy_msyh_ttf():
 
 def batch_patch_names():
     mapping = get_msyh_mapping()
-    logging.info(f"开始设置字体名称，共 {len(mapping)} 个文件")
+    total = len(mapping)
+    logging.info(f"开始设置字体Name信息，共 {total} 个文件")
 
     processed_count = 0
     skipped_count = 0
 
-    for dst, _ in mapping:
-        dst_path = os.path.join(config["TEMP_DIR"], dst)
-        if os.path.exists(dst_path):
-            set_names_with_json(dst_path, dst)
+    for idx, (dst, _) in enumerate(mapping, 1):
+        try:
+            ttf_path = os.path.join(config["TEMP_DIR"], dst)
+            set_names_with_json(ttf_path, dst)
             processed_count += 1
-            logging.debug(f"设置名称成功: {dst}")
-        else:
+            print_progress_bar(idx, total, prefix="设置字体Name信息", suffix=f"{dst} ({idx}/{total})")
+        except Exception as e:
             skipped_count += 1
-            logging.debug(f"跳过设置名称: {dst} (文件不存在)")
-
-    logging.info(f"字体名称设置完成 - 处理: {processed_count}, 跳过: {skipped_count}")
+            logging.warning(f"设置字体Name信息失败: {dst}, 错误: {e}")
+    
+    print()  # 进度条完成后换行
+    logging.info(f"字体Name信息设置完成 - 处理: {processed_count}, 跳过: {skipped_count}")
 
 
 def generate_ttc_with_fonttools(ttf_list, ttc_path):
@@ -295,12 +302,14 @@ def batch_generate_ttc(ttc_names=None, use_parallel=None, max_workers=None):
         logging.info(
             f"使用并行处理生成 [{len(ttc_tasks)}/{len(TTC_GROUPS)}] 个 TTC 文件，工作线程数: {max_workers}"
         )
-        _batch_generate_ttc_parallel(ttc_tasks, max_workers)
+        success_count, failed_count = _batch_generate_ttc_parallel(ttc_tasks, max_workers)
     else:
         logging.info(
             f"使用串行处理生成 [{len(ttc_tasks)}/{len(TTC_GROUPS)}] 个 TTC 文件"
         )
-        _batch_generate_ttc_serial(ttc_tasks)
+        success_count, failed_count = _batch_generate_ttc_serial(ttc_tasks)
+
+    logging.info(f"TTC 生成完成 - 成功: {success_count}, 失败: {failed_count}")
 
 
 def _generate_single_ttc(ttc_name, ttf_paths, ttc_path):
@@ -320,82 +329,75 @@ def _generate_single_ttc(ttc_name, ttf_paths, ttc_path):
 
 
 def _batch_generate_ttc_parallel(ttc_tasks, max_workers):
-    """
-    并行生成 TTC 文件
-    """
-    completed_count = 0
+    """并行生成TTC文件"""
+    total = len(ttc_tasks)
+    success_count = 0
     failed_count = 0
-    total_start = time.time()
-
+    
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 提交所有任务
-        future_to_task = {
-            executor.submit(
-                _generate_single_ttc, ttc_name, ttf_paths, ttc_path
-            ): ttc_name
-            for ttc_name, ttf_paths, ttc_path in ttc_tasks
-        }
-
-        # 处理完成的任务
-        for future in as_completed(future_to_task):
-            ttc_name, success, duration, error_msg = future.result()
-
-            if success:
-                completed_count += 1
-            else:
-                logging.error(f"生成 {ttc_name} 失败: {error_msg}")
+        futures = []
+        for ttc_name, ttf_paths, ttc_path in ttc_tasks:
+            future = executor.submit(_generate_single_ttc, ttc_name, ttf_paths, ttc_path)
+            futures.append((ttc_name, future))
+        
+        for idx, (ttc_name, future) in enumerate(futures, 1):
+            try:
+                success = future.result()
+                if success:
+                    success_count += 1
+                else:
+                    failed_count += 1
+                print_progress_bar(idx, total, prefix="生成TTC文件", suffix=f"{ttc_name} ({idx}/{total})")
+            except Exception as e:
                 failed_count += 1
-
-    total_duration = time.time() - total_start
-    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}")
+                logging.error(f"生成 {ttc_name} 失败: {e}")
+        
+        print()  # 进度条完成后换行
+    return success_count, failed_count
 
 
 def _batch_generate_ttc_serial(ttc_tasks):
-    """
-    串行生成 TTC 文件
-    """
-    total_start = time.time()
-    completed_count = 0
+    """串行生成TTC文件"""
+    total = len(ttc_tasks)
+    success_count = 0
     failed_count = 0
-
-    for ttc_name, ttf_paths, ttc_path in ttc_tasks:
+    
+    for idx, (ttc_name, ttf_paths, ttc_path) in enumerate(ttc_tasks, 1):
         try:
-            generate_ttc_with_fonttools(ttf_paths, ttc_path)
-            completed_count += 1
+            if _generate_single_ttc(ttc_name, ttf_paths, ttc_path):
+                success_count += 1
+            else:
+                failed_count += 1
+            print_progress_bar(idx, total, prefix="生成TTC文件", suffix=f"{ttc_name} ({idx}/{total})")
         except Exception as e:
-            logging.error(f"生成 {ttc_name} 失败: {e}")
             failed_count += 1
-
-    total_duration = time.time() - total_start
-    logging.info(f"TTC 生成完成 - 成功: {completed_count}, 失败: {failed_count}")
+            logging.error(f"生成 {ttc_name} 失败: {e}")
+    
+    print()  # 进度条完成后换行
+    return success_count, failed_count
 
 
 def copy_individual_ttf_to_result(result_dir):
-    """
-    将单独的TTF文件复制到结果目录（如果配置启用）
-    """
-    if not config.get("INCLUDE_INDIVIDUAL_TTF", False):
+    """复制单独的TTF文件到结果目录"""
+    if not config.get("INCLUDE_INDIVIDUAL_TTF", True):
         return
 
-    logging.info("开始复制单独的TTF文件到结果目录...")
-    temp_dir = config["TEMP_DIR"]
     mapping = get_msyh_mapping()
-
+    total = len(mapping)
+    logging.info("开始复制单独的TTF文件到结果目录...")
+    
     copied_count = 0
-    for dst, _ in mapping:
-        src_path = os.path.join(temp_dir, dst)
-        dst_path = os.path.join(result_dir, dst)
-
-        if os.path.exists(src_path):
-            try:
-                safe_copy(src_path, dst_path)
-                copied_count += 1
-                logging.debug(f"复制TTF文件: {dst}")
-            except Exception as e:
-                logging.warning(f"复制TTF文件失败 {dst}: {e}")
-        else:
-            logging.warning(f"TTF文件不存在: {src_path}")
-
+    for idx, (dst, _) in enumerate(mapping, 1):
+        try:
+            src = os.path.join(config["TEMP_DIR"], dst)
+            dst_path = os.path.join(result_dir, dst)
+            safe_copy(src, dst_path)
+            copied_count += 1
+            print_progress_bar(idx, total, prefix="复制TTF到结果目录", suffix=f"{dst} ({idx}/{total})")
+        except Exception as e:
+            logging.error(f"复制 {dst} 到结果目录失败: {e}")
+    
+    print()  # 进度条完成后换行
     logging.info(f"TTF文件复制完成，共复制 {copied_count} 个文件到结果目录")
 
 
@@ -406,15 +408,24 @@ def check_ttc_generated():
 
 
 def copy_result_files(result_dir):
-    """复制TTC文件到结果目录"""
-    main_files = ["msyh.ttc", "msyhbd.ttc", "msyhl.ttc", "msyhxl.ttc", "msyhsb.ttc"]
-    for file in main_files:
-        src = os.path.join(config["TEMP_DIR"], file)
-        dst = os.path.join(result_dir, file)
+    """复制生成的字体文件到结果目录"""
+    # 复制TTC文件
+    ttc_files = list(TTC_GROUPS.keys())
+    total_ttc = len(ttc_files)
+    
+    for idx, ttc_name in enumerate(ttc_files, 1):
+        src = os.path.join(config["TEMP_DIR"], ttc_name)
+        dst = os.path.join(result_dir, ttc_name)
         try:
             safe_copy(src, dst)
-        except Exception:
-            logging.error(f"复制 {src} 到 {dst} 失败", exc_info=True)
+            print_progress_bar(idx, total_ttc, prefix="复制TTC到结果目录", suffix=f"{ttc_name} ({idx}/{total_ttc})")
+        except Exception as e:
+            logging.error(f"复制 {ttc_name} 到结果目录失败: {e}")
+    
+    print()  # 进度条完成后换行
+    
+    # 复制单独的TTF文件（如果配置允许）
+    copy_individual_ttf_to_result(result_dir)
 
 
 if __name__ == "__main__":
