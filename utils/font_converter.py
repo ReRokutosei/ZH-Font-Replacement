@@ -14,8 +14,6 @@ from otf2ttf.official.otf2ttf import otf_to_ttf as official_otf2ttf
 from otf2ttf.official.otf2ttf import update_hmtx
 
 from .config import get_config_value
-from .file_ops import ensure_dir_exists
-from .progress import print_progress_bar
 
 
 def find_otf_files(root_dir):

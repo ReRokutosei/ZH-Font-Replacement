@@ -4,7 +4,6 @@
 """
 
 import datetime
-import logging
 import os
 
 
@@ -109,7 +108,12 @@ def write_version_report(config, now_format, full):
         }
     for k, v in config.items():
         if k in explain_map:
-            if k in ["ENABLE_MS_YAHEI", "ENABLE_SEGOE_UI", "MSYH_ENABLE_EXTRA_ITALIC", "CLEAN_TEMP_ON_SUCCESS"]:
+            if k in [
+                "ENABLE_MS_YAHEI",
+                "ENABLE_SEGOE_UI",
+                "MSYH_ENABLE_EXTRA_ITALIC",
+                "CLEAN_TEMP_ON_SUCCESS",
+            ]:
                 v_str = "启用" if v else "禁用"
             elif k == "FONT_PACKAGE_SOURCE":
                 if v == "local":
