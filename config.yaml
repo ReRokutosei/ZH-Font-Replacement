@@ -4,6 +4,14 @@
 ENABLE_MS_YAHEI: true      # 是否生成微软雅黑字体（基于更纱黑体伪装）
 ENABLE_SEGOE_UI: true      # 是否生成 Segoe UI 字体（基于 Inter 伪装）
 
+# =================================================================
+# 微软雅黑字体设置（仅当 ENABLE_MS_YAHEI: true 时生效）
+# =================================================================
+# 是否生成额外的斜体字重（每个字重额外生成斜体版本）
+# - true：  生成全部20个字体文件（每个字重4个变体：常规、UI、斜体、UI斜体）
+# - false： 仅生成10个字体文件（每个字重2个变体：常规、UI）
+MSYH_ENABLE_EXTRA_ITALIC: false
+
 
 # =================================================================
 # 目录设置
@@ -52,7 +60,7 @@ DOWNLOAD_TIMEOUT: 60
 CLEAN_TEMP_ON_SUCCESS: true
 
 # 是否在结果目录中同时保存生成的微软雅黑TTF文件
-# - true：  同时保存20个的微软雅黑TTF文件（适合旧版本 Win10）
+# - true：  同时保存10/20个的微软雅黑TTF文件（适合旧版本 Win10）
 # - false： 仅保存合并后的微软雅黑TTC文件
 INCLUDE_INDIVIDUAL_TTF: true
 
@@ -102,7 +110,7 @@ msyh_mapping: [
     ["msyhbd0.ttf", "SarasaGothicSC-Bold.ttf"],  # 以下文件名规则相同
     ["msyhbd1.ttf", "SarasaUiSC-Bold.ttf"],
     ["msyhbd2.ttf", "SarasaGothicSC-BoldItalic.ttf"],
-    ["msyhbd3.ttf", "SarasaUi-BoldItalic.ttf"],
+    ["msyhbd3.ttf", "SarasaUiSC-BoldItalic.ttf"],
 
     # 细体
     ["msyhl0.ttf", "SarasaGothicSC-Light.ttf"],

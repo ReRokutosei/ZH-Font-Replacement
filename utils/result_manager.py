@@ -79,6 +79,7 @@ def write_version_report(config, now_format, full):
                 report_lines.append(f"  Inter: 获取失败 ({e})")
 
     # 主要配置参数说明
+    report_lines.append("")
     report_lines.append("主要配置参数说明：")
 
     if config.get("FONT_PACKAGE_SOURCE", "custom") == "custom":
@@ -90,6 +91,7 @@ def write_version_report(config, now_format, full):
             "RESULT_DIR": "结果输出目录",
             "SOURCE_FILES_DIR": "源文件存放目录",
             "CLEAN_TEMP_ON_SUCCESS": "清理临时目录",
+            "MSYH_ENABLE_EXTRA_ITALIC": "微软雅黑额外斜体",
         }
     else:
         explain_map = {
@@ -103,13 +105,12 @@ def write_version_report(config, now_format, full):
             "RESULT_DIR": "结果输出目录",
             "SOURCE_FILES_DIR": "源文件存放目录",
             "CLEAN_TEMP_ON_SUCCESS": "清理临时目录",
+            "MSYH_ENABLE_EXTRA_ITALIC": "微软雅黑额外斜体",
         }
     for k, v in config.items():
         if k in explain_map:
-            if k in ["ENABLE_MS_YAHEI", "ENABLE_SEGOE_UI"]:
+            if k in ["ENABLE_MS_YAHEI", "ENABLE_SEGOE_UI", "MSYH_ENABLE_EXTRA_ITALIC", "CLEAN_TEMP_ON_SUCCESS"]:
                 v_str = "启用" if v else "禁用"
-            elif k == "CLEAN_TEMP_ON_SUCCESS":
-                v_str = "是" if v else "否"
             elif k == "FONT_PACKAGE_SOURCE":
                 if v == "local":
                     v_str = "本地(local)"
