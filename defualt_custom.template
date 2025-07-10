@@ -10,7 +10,7 @@ msyh_mapping: [
     ["msyhbd0.ttf", "SarasaGothicSC-Bold.ttf"],
     ["msyhbd1.ttf", "SarasaUiSC-Bold.ttf"],
     ["msyhbd2.ttf", "SarasaGothicSC-BoldItalic.ttf"],
-    ["msyhbd3.ttf", "SarasaUi-BoldItalic.ttf"],
+    ["msyhbd3.ttf", "SarasaUiSC-BoldItalic.ttf"],
     ["msyhl0.ttf", "SarasaGothicSC-Light.ttf"],
     ["msyhl1.ttf", "SarasaUiSC-Light.ttf"],
     ["msyhl2.ttf", "SarasaGothicSC-LightItalic.ttf"],
