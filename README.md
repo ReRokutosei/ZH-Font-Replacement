@@ -23,12 +23,16 @@
 
 ## 重要须知
 
-⚠️ **重要警告：**
-- 本项目生成的文件**仅限用于开发与测试环境**。
-- **严禁在生产环境或日常使用的 Windows 系统中使用！**
-- **你需要自行查找教程并手动替换**系统中的原始字体文件。
-- **本工具不提供替换教程或自动化替换功能。**
-- 字体替换存在风险，**请确保具备相关知识和实操能力**。
+> [!CAUTION] 字体替换存在风险，请确保具备相关知识和实操能力
+> 
+> 本项目生成的文件**仅限用于开发与测试环境**。
+> 
+> **严禁在生产环境或日常中使用！**
+> 
+> 
+> **本项目不提供替换教程或自动化替换功能。**
+>
+>  **你需要自行查找教程并手动替换**系统的原始字体文件。
 
 
 - [ZH-Font-Replacement](#zh-font-replacement)
@@ -43,7 +47,6 @@
   - [配置说明](#配置说明)
   - [字体包说明](#字体包说明)
   - [一键生成流程](#一键生成流程)
-  - [主要功能与原理](#主要功能与原理)
   - [设置额外字重生效（Windows）](#设置额外字重生效windows)
   - [更新日志](#更新日志)
   - [注意事项](#注意事项)
@@ -192,6 +195,7 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 
 ## 配置说明
 
+>[!IMPORTANT] 配置项
 所有配置均由 [config.yaml](config.yaml) 控制。
 
 ## 字体包说明
@@ -204,7 +208,7 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 - **Inter 字体**包含两种常见变体：`InterDisplay` 和 `Inter`。两者字符外观一致。
   - 区别在于，**带 `Display` 标识**的排版上会更加紧凑。
 
-- **local 模式**：如使用 `FONT_PACKAGE_SOURCE: online` ，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
+- **local 模式**：如使用 `FONT_PACKAGE_SOURCE: local` ，需将以下官方原版字体包放入 `source_files/` 目录，文件名保持原样：
 
   - Sarasa Gothic：
     - `SarasaGothicSC-TTF-<版本号>.7z` 或 `SarasaGothicSC-TTF-Unhinted-<版本号>.7z`
@@ -214,9 +218,10 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
     - `Inter-<版本号>.zip`，如 `Inter-4.1.zip`
     - 可从 [Inter Releases](https://github.com/rsms/inter/releases) 获取
 
-  > 注意：
-  > - 文件名必须与官方 release 保持一致，否则自动识别会失败。
-  > - 只需下载上述压缩包，无需手动解压。
+  > [!NOTE]注意
+  >> 只需下载上述压缩包，无需手动解压。
+  >>
+  >> 文件名必须与官方 release 保持一致，否则自动识别会失败。
 
 - **在线下载**：在yaml设置 `FONT_PACKAGE_SOURCE: online` 后，将自动下载最新字体包；若本地已有最新版本则跳过
 
@@ -238,27 +243,14 @@ python main.py
 - 结果输出至 `result/verXX-日期时间/`
 - 可选自动清理临时文件
 
----
-
-## 主要功能与原理
-
-- **高度模块化**：
-  - 微软雅黑与 Segoe UI 生成流程完全解耦
-  - 各自有独立 workflow 文件，主流程统一调度
-  - 工具函数按功能分类
-- **伪装生成**：
-  - 微软雅黑：将 Sarasa SC/UiSC 多字重合成 TTC，批量重命名、替换补全 name 字段
-  - Segoe UI：将 Inter 拆分、重命名、批量替换补全 name 字段
-- **自动化流程**：
-  - 支持本地包与在线下载、解压，自动校验 Sarasa 包哈希
-  - 结果目录自动递增，自动生成详细版本报告（含源字体包版本信息）
-  - 并行处理支持，提高字体转换效率
 
 ---
 
 ## 设置额外字重生效（Windows）
 
 如需让极细和半粗字重在 Windows 下生效，请新建 reg 文件，内容如下：
+
+>[!CAUTION]修改注册表前请备份，操作不当可能导致系统问题
 
 ```reg
 Windows Registry Editor Version 5.00
@@ -296,10 +288,15 @@ Windows Registry Editor Version 5.00
 ---
 
 ## 免责声明
-
-- 本项目仅供学习、开发、测试用途，严禁用于任何商业用途或违法用途。
-- 所有生成字体均为伪装产物，非官方版本，与 Microsoft、Be5invis、Rasmus Andersson 等原作者无关。
-- 使用本项目造成的任何后果，作者概不负责。
+>[!CAUTION] 免责声明
+>
+> 使用前请务必仔细阅读各项说明。
+> 
+> 使用本项目造成的任何后果，作者概不负责。
+> 
+> 本项目仅供学习、开发、测试用途，严禁用于任何商业用途或违法用途。
+> 
+> 所有生成字体均为伪装产物，非官方版本，与 Microsoft、Be5invis、Rasmus Andersson 等原作者无关。
 
 ---
 
@@ -314,7 +311,8 @@ Windows Registry Editor Version 5.00
 ---
 
 ## Full Name表
->附上FullName(NameID=4, Lang=2052 or Lang=1032)的CSV表参考
+>[!TIP]附上Full Name的CSV表参考
+> (NameID=4, Lang=2052 or Lang=1032)
 
 ```csv
 # msyh-Ver6.30
