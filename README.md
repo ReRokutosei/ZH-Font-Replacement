@@ -23,7 +23,8 @@
 
 ## 重要须知
 
-> [!CAUTION] 字体替换存在风险，请确保具备相关知识和实操能力
+> [!CAUTION]
+> 字体替换存在风险，请确保具备相关知识和实操能力
 > 
 > 本项目生成的文件**仅限用于开发与测试环境**。
 > 
@@ -195,7 +196,7 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
 
 ## 配置说明
 
->[!IMPORTANT] 配置项
+>[!IMPORTANT]
 所有配置均由 [config.yaml](config.yaml) 控制。
 
 ## 字体包说明
@@ -218,7 +219,8 @@ pip install fonttools==4.58.4 py7zr==1.0.0 requests==2.32.4 pyyaml
     - `Inter-<版本号>.zip`，如 `Inter-4.1.zip`
     - 可从 [Inter Releases](https://github.com/rsms/inter/releases) 获取
 
-  > [!NOTE]注意
+> [!NOTE]  
+  >
   >> 只需下载上述压缩包，无需手动解压。
   >>
   >> 文件名必须与官方 release 保持一致，否则自动识别会失败。
@@ -250,7 +252,10 @@ python main.py
 
 如需让极细和半粗字重在 Windows 下生效，请新建 reg 文件，内容如下：
 
->[!CAUTION]修改注册表前请备份，操作不当可能导致系统问题
+>[!CAUTION]
+>修改注册表前请备份
+>
+>操作不当可能导致系统问题
 
 ```reg
 Windows Registry Editor Version 5.00
@@ -288,7 +293,7 @@ Windows Registry Editor Version 5.00
 ---
 
 ## 免责声明
->[!CAUTION] 免责声明
+>[!CAUTION]
 >
 > 使用前请务必仔细阅读各项说明。
 > 
@@ -311,7 +316,9 @@ Windows Registry Editor Version 5.00
 ---
 
 ## Full Name表
->[!TIP]附上Full Name的CSV表参考
+>[!TIP]
+>附上Full Name的CSV表参考
+>
 > (NameID=4, Lang=2052 or Lang=1032)
 
 ```csv
